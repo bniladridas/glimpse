@@ -1,0 +1,6 @@
+{
+  "name": "GLIMPSE",
+  "description": "A mobile-ready logo maker and background eraser for clean brand assets. PWA-enabled for local install.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
