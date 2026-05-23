@@ -390,9 +390,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                 className={`text-[9px] tracking-[0.2em] transition-all duration-500 relative py-1.5 uppercase font-semibold ${
                   activeTab === tab.id 
                     ? "text-brand-text" 
-                    : theme === "grey"
-                      ? "text-stone-500 hover:text-stone-400"
-                      : "text-stone-400 dark:text-stone-700 hover:text-stone-500"
+                    : "text-brand-text/40 hover:text-brand-text/70"
                 }`}
               >
                 {tab.label}
@@ -410,10 +408,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         
         <button 
           onClick={toggleTheme}
-          className={`p-1.5 transition-colors flex items-center gap-2 group ${
-            theme === "light" ? "text-stone-300" : 
-            theme === "dark" ? "text-stone-800" : "text-stone-500"
-          } hover:text-brand-text`}
+          className="p-1.5 transition-colors flex items-center gap-2 group text-brand-text/40 hover:text-brand-text"
         >
           {theme === "light" ? (
             <Moon className="w-4 h-4" />
@@ -478,18 +473,16 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     placeholder="NAME"
                   />
                   <div className="flex flex-col gap-3">
-                    <span className="text-[9px] uppercase tracking-widest text-stone-400 dark:text-stone-600">Family</span>
+                    <span className="text-[9px] uppercase tracking-widest text-brand-text/50">Family</span>
                     <div className="flex gap-6">
                       {FONTS.map(f => (
                         <button 
                           key={f.name}
                           onClick={() => setBuilderFont(f)}
-                          className={`text-[10px] font-medium tracking-widest transition-all duration-300 uppercase ${
+                          className={`text-[10px] tracking-widest transition-all duration-300 uppercase ${
                             builderFont.name === f.name 
-                              ? "text-brand-text scale-105" 
-                              : theme === "grey"
-                                ? "text-stone-500 hover:text-stone-400"
-                                : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
+                              ? "text-brand-text font-bold scale-105" 
+                              : "text-brand-text/40 hover:text-brand-text/70 font-medium"
                           }`}
                         >
                           {f.name}
@@ -498,18 +491,16 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     </div>
                   </div>
                   <div className="flex flex-col gap-3 pt-2">
-                    <span className="text-[9px] uppercase tracking-widest text-stone-400 dark:text-stone-600">Weight</span>
+                    <span className="text-[9px] uppercase tracking-widest text-brand-text/50">Weight</span>
                     <div className="flex gap-6">
                       {(["light", "normal", "bold"] as const).map(w => (
                         <button 
                           key={w}
                           onClick={() => setBuilderTextWeight(w)}
-                          className={`text-[10px] font-medium tracking-widest transition-all duration-300 uppercase ${
+                          className={`text-[10px] tracking-widest transition-all duration-300 uppercase ${
                             builderTextWeight === w 
-                              ? "text-brand-text scale-105" 
-                              : theme === "grey"
-                                ? "text-stone-500 hover:text-stone-400"
-                                : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
+                              ? "text-brand-text font-bold scale-105" 
+                              : "text-brand-text/40 hover:text-brand-text/70 font-medium"
                           }`}
                         >
                           {w}
@@ -521,13 +512,13 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
 
                 <section className="space-y-3.5">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Active Icon</span>
+                    <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Active Icon</span>
                     <button 
                       onClick={() => setIsIconsExpanded(!isIconsExpanded)}
                       className={`text-[9px] font-mono tracking-wider px-2.5 py-1 rounded-sm border transition-all duration-300 uppercase ${
                         isIconsExpanded
-                          ? "bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-100 dark:border-stone-100 dark:text-stone-950 font-bold"
-                          : "border-brand-border/10 text-stone-400 dark:text-stone-500 hover:text-brand-text hover:border-brand-text/30 font-medium"
+                          ? "bg-brand-text border-brand-text text-brand-bg font-bold"
+                          : "border-brand-border/10 text-brand-text/50 hover:text-brand-text hover:border-brand-text/30 font-medium"
                       }`}
                     >
                       {isIconsExpanded ? "Close Atelier [-]" : "Browse Atelier [+]"}
@@ -541,12 +532,12 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                       <div className="w-9 h-9 rounded-sm bg-brand-subtle/80 border border-brand-border/5 flex items-center justify-center shadow-inner">
                         <DynamicIcon name={builderIcon} className="w-5 h-5 text-brand-text stroke-[1.5px]" />
                       </div>
-                      <span className="text-[8px] font-semibold tracking-tight text-center max-w-full truncate text-stone-400 mt-1">{builderIcon}</span>
+                      <span className="text-[8px] font-semibold tracking-tight text-center max-w-full truncate text-brand-text/50 mt-1">{builderIcon}</span>
                     </div>
 
                     {/* Quick Selection Library */}
                     <div className="col-span-8 pl-1 flex flex-col justify-center h-14">
-                      <span className="text-[8px] font-mono tracking-widest text-stone-400 dark:text-stone-600 uppercase mb-1.5 block">Quick Select</span>
+                      <span className="text-[8px] font-mono tracking-widest text-brand-text/40 uppercase mb-1.5 block">Quick Select</span>
                       <div className="flex gap-1.5">
                         {["Circle", "Triangle", "Hexagon", "Infinity", "NodeTree"].map((fav) => (
                           <button
@@ -559,7 +550,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                             }`}
                             title={`Quick select ${fav}`}
                           >
-                            <DynamicIcon name={fav} className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
+                            <DynamicIcon name={fav} className={`w-3.5 h-3.5 ${builderIcon === fav ? "text-brand-text" : "text-brand-text/40"}`} />
                           </button>
                         ))}
                       </div>
@@ -567,28 +558,28 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                   </div>
 
                   {/* Dev Code Copiers */}
-                  <div className="flex items-center justify-end gap-2.5 text-[8px] sm:text-[9px] text-stone-400 dark:text-stone-500 font-mono select-none relative">
-                    <span className="text-[8px] text-stone-300 dark:text-stone-800 uppercase tracking-wider">Use in code:</span>
+                  <div className="flex items-center justify-end gap-2.5 text-[8px] sm:text-[9px] text-brand-text/50 font-mono select-none relative">
+                    <span className="text-[8px] text-brand-text/30 uppercase tracking-wider">Use in code:</span>
                     <button
                       onClick={() => copyIconCode("react")}
-                      className="hover:text-brand-text cursor-pointer transition-colors duration-150 underline decoration-stone-200 dark:decoration-stone-800 underline-offset-2"
+                      className="hover:text-brand-text cursor-pointer transition-colors duration-150 underline decoration-brand-text/10 underline-offset-2"
                     >
                       {copiedType === "react" ? "React (Copied)" : "React"}
                     </button>
-                    <span className="text-stone-300 dark:text-stone-800">•</span>
+                    <span className="text-brand-text/20">•</span>
                     <button
                       onClick={() => copyIconCode("svg")}
-                      className="hover:text-brand-text cursor-pointer transition-colors duration-150 underline decoration-stone-200 dark:decoration-stone-800 underline-offset-2"
+                      className="hover:text-brand-text cursor-pointer transition-colors duration-150 underline decoration-brand-text/10 underline-offset-2"
                     >
                       {copiedType === "svg" ? "SVG (Copied)" : "SVG"}
                     </button>
-                    <span className="text-stone-300 dark:text-stone-800">•</span>
+                    <span className="text-brand-text/20">•</span>
                     
                     {/* Extra Clever Native Formats Popover - Quiet, elegant, zero clutter */}
                     <div className="relative inline-block" id="more-copy-dropdown">
                       <button
                         onClick={() => setIsMoreCopyOpen(!isMoreCopyOpen)}
-                        className="hover:text-brand-text cursor-pointer transition-colors duration-150 flex items-center gap-0.5 underline decoration-stone-200 dark:decoration-stone-800 underline-offset-2"
+                        className="hover:text-brand-text cursor-pointer transition-colors duration-150 flex items-center gap-0.5 underline decoration-brand-text/10 underline-offset-2"
                       >
                         {copiedType === "rust" || copiedType === "kotlin" || copiedType === "dart" 
                           ? `${copiedType.charAt(0).toUpperCase() + copiedType.slice(1)} (Copied)`
@@ -608,9 +599,9 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                               animate={{ opacity: 1, y: 0, scale: 1 }}
                               exit={{ opacity: 0, y: 5, scale: 0.95 }}
                               transition={{ duration: 0.15 }}
-                              className="absolute right-0 bottom-full mb-2 w-32 bg-stone-50 dark:bg-stone-900 border border-brand-border/15 dark:border-stone-800 rounded shadow-md p-1 z-50 flex flex-col gap-0.5"
+                              className="absolute right-0 bottom-full mb-2 w-32 bg-brand-bg border border-brand-border rounded shadow-md p-1 z-50 flex flex-col gap-0.5"
                             >
-                              <div className="px-1.5 py-0.5 text-[7px] text-stone-400 dark:text-stone-500 uppercase tracking-wider border-b border-brand-border/5 mb-0.5 select-none">
+                              <div className="px-1.5 py-0.5 text-[7px] text-brand-text/40 uppercase tracking-wider border-b border-brand-border mb-0.5 select-none">
                                 native formats
                               </div>
                               <button
@@ -618,7 +609,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                   copyIconCode("rust");
                                   setIsMoreCopyOpen(false);
                                 }}
-                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-stone-400 dark:text-stone-500 cursor-pointer"
+                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-brand-text/60 cursor-pointer"
                               >
                                 Rust (String)
                               </button>
@@ -627,7 +618,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                   copyIconCode("kotlin");
                                   setIsMoreCopyOpen(false);
                                 }}
-                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-stone-400 dark:text-stone-500 cursor-pointer"
+                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-brand-text/60 cursor-pointer"
                               >
                                 Kotlin (Compose)
                               </button>
@@ -636,7 +627,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                   copyIconCode("dart");
                                   setIsMoreCopyOpen(false);
                                 }}
-                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-stone-400 dark:text-stone-500 cursor-pointer"
+                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-brand-text/60 cursor-pointer"
                               >
                                 Dart (Flutter Svg)
                               </button>
@@ -654,7 +645,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                         {/* Mobile backdrop to block page & tap away to close */}
                         <div 
                           onClick={() => setIsIconsExpanded(false)}
-                          className="fixed inset-0 bg-stone-950/20 dark:bg-stone-950/50 backdrop-blur-[2px] z-30 lg:hidden"
+                          className="fixed inset-0 bg-brand-text/10 backdrop-blur-[2px] z-30 lg:hidden"
                         />
                         
                         {/* Smooth Slide Drawer on Mobile, Absolute floating panel next to Sidebar on Desktop */}
@@ -669,13 +660,13 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                           <div className="flex items-center justify-between pb-3 border-b border-brand-border/10 shrink-0">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-bold tracking-[0.2em] text-brand-text uppercase">Symbol Atelier</span>
-                              <span className="text-[9px] font-mono text-stone-400 bg-brand-subtle/50 px-2 py-0.5 rounded-sm">
+                              <span className="text-[9px] font-mono text-brand-text/50 bg-brand-subtle px-2 py-0.5 rounded-sm">
                                 {filteredSymbols.length} available
                               </span>
                             </div>
                             <button 
                               onClick={() => setIsIconsExpanded(false)}
-                              className="text-[9px] font-mono text-stone-400 dark:text-stone-500 hover:text-brand-text tracking-wider uppercase"
+                              className="text-[9px] font-mono text-brand-text/40 hover:text-brand-text tracking-wider uppercase"
                             >
                               [Close]
                             </button>
@@ -683,18 +674,18 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
 
                           {/* Quick Filter Search */}
                           <div className="relative flex items-center shrink-0">
-                            <Search className="absolute left-2.5 w-3 h-3 text-stone-400 dark:text-stone-600 pointer-events-none" />
+                            <Search className="absolute left-2.5 w-3 h-3 text-brand-text/30 pointer-events-none" />
                             <input 
                               type="text" 
                               placeholder="Search all icons..." 
                               value={iconSearch}
                               onChange={(e) => setIconSearch(e.target.value)}
-                              className="w-full bg-brand-subtle/30 border border-brand-border/10 rounded-sm pl-8 pr-7 py-1.5 outline-none text-[10px] tracking-wide focus:border-brand-text transition-colors placeholder:text-stone-400 dark:placeholder:text-stone-600"
+                              className="w-full bg-brand-subtle/30 border border-brand-border/10 rounded-sm pl-8 pr-7 py-1.5 outline-none text-[10px] tracking-wide focus:border-brand-text transition-colors placeholder:text-brand-text/30"
                             />
                             {iconSearch && (
                               <button 
                                 onClick={() => setIconSearch("")}
-                                className="absolute right-2.5 text-stone-400 hover:text-brand-text transition-colors text-[10px]"
+                                className="absolute right-2.5 text-brand-text/40 hover:text-brand-text transition-colors text-[10px]"
                               >
                                 ✕
                               </button>
@@ -710,7 +701,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                 className={`text-[9.5px] font-bold tracking-wider px-2.5 py-0.5 rounded-full border transition-all duration-300 uppercase whitespace-nowrap ${
                                   iconCategory === cat 
                                     ? "bg-brand-text border-brand-text text-brand-bg" 
-                                    : "border-brand-border/10 text-stone-400 hover:text-brand-text hover:border-brand-border/40"
+                                    : "border-brand-border/10 text-brand-text/40 hover:text-brand-text hover:border-brand-border/40"
                                 }`}
                               >
                                 {cat}
@@ -745,7 +736,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                 ))}
                               </div>
                             ) : (
-                              <div className="py-12 text-center text-[10px] text-stone-400 dark:text-stone-600 italic">
+                              <div className="py-12 text-center text-[10px] text-brand-text/40 italic">
                                 No symbols match your filter
                               </div>
                             )}
@@ -759,8 +750,8 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                 <section className="grid grid-cols-2 gap-x-5 pt-4 border-t border-brand-border/10">
                   <div className="space-y-1.5 prose-none">
                     <div className="flex items-center justify-between">
-                      <span className="text-[8.5px] font-mono tracking-wider text-stone-400 dark:text-stone-500 uppercase">Size</span>
-                      <span className="text-[8px] font-mono text-stone-400 dark:text-stone-500">{Math.round(iconScale * 100)}%</span>
+                      <span className="text-[8.5px] font-mono tracking-wider text-brand-text/50 uppercase">Size</span>
+                      <span className="text-[8px] font-mono text-brand-text/50">{Math.round(iconScale * 100)}%</span>
                     </div>
                     <div className="relative flex items-center">
                       <input 
@@ -777,8 +768,8 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
 
                   <div className="space-y-1.5 prose-none">
                     <div className="flex items-center justify-between">
-                      <span className="text-[8.5px] font-mono tracking-wider text-stone-400 dark:text-stone-500 uppercase">Stroke</span>
-                      <span className="text-[8px] font-mono text-stone-400 dark:text-stone-500">{strokeWidth.toFixed(1)}px</span>
+                      <span className="text-[8.5px] font-mono tracking-wider text-brand-text/50 uppercase">Stroke</span>
+                      <span className="text-[8px] font-mono text-brand-text/50">{strokeWidth.toFixed(1)}px</span>
                     </div>
                     <div className="relative flex items-center">
                       <input 
@@ -796,9 +787,9 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
 
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Colors</span>
+                    <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Colors</span>
                     <div className="flex items-center gap-2">
-                       <span className="text-[9px] font-mono text-stone-300">#</span>
+                       <span className="text-[9px] font-mono text-brand-text/30">#</span>
                        <input 
                         type="text" 
                         value={customColor.replace("#", "")}
@@ -834,16 +825,14 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                 </section>
 
                 <section className="space-y-4">
-                  <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Glass</span>
+                  <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Glass</span>
                   <div className="flex gap-6">
                     <button 
                       onClick={() => setIsBgTransparent(false)}
                       className={`text-[10px] font-medium tracking-widest transition-all duration-300 ${
                         !isBgTransparent 
                           ? "text-brand-text scale-105" 
-                          : theme === "grey"
-                            ? "text-stone-500 hover:text-stone-400"
-                            : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
+                          : "text-brand-text/40 hover:text-brand-text/75"
                       }`}
                     >
                       SOLID
@@ -853,9 +842,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                       className={`text-[10px] font-medium tracking-widest transition-all duration-300 ${
                         isBgTransparent 
                           ? "text-brand-text scale-105" 
-                          : theme === "grey"
-                            ? "text-stone-500 hover:text-stone-400"
-                            : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
+                          : "text-brand-text/40 hover:text-brand-text/75"
                       }`}
                     >
                       CLEAR
@@ -866,9 +853,9 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                 {!isBgTransparent && (
                   <section className="space-y-4 animate-in fade-in slide-in-from-top-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Canvas</span>
+                      <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Canvas</span>
                       <div className="flex items-center gap-2">
-                        <span className="text-[9px] font-mono text-stone-300">#</span>
+                        <span className="text-[9px] font-mono text-brand-text/30">#</span>
                         <input 
                           type="text" 
                           value={customBgColor.replace("#", "")}
@@ -907,16 +894,16 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                 <div className="pt-12">
                   <button 
                     onClick={captureBuilderLogo}
-                    className="w-full text-[10px] font-bold tracking-[0.4em] text-brand-text hover:opacity-10 dark:hover:opacity-30 transition-all flex items-center justify-between group"
+                    className="w-full text-[10px] font-bold tracking-[0.4em] text-brand-text hover:opacity-50 transition-all flex items-center justify-between group"
                   >
                     SAVE PNG
-                    <Download className="w-3 h-3 group-hover:translate-y-0.5 transition-transform opacity-30" />
+                    <Download className="w-3 h-3 group-hover:translate-y-0.5 transition-transform opacity-40" />
                   </button>
                 </div>
               </div>
             ) : (
               <div className="space-y-12">
-                <p className="text-xs text-stone-400 dark:text-stone-500 font-medium leading-relaxed max-w-sm">
+                <p className="text-xs text-brand-text/50 font-medium leading-relaxed max-w-sm">
                   Remove backgrounds from your images instantly.
                 </p>
                 
@@ -924,7 +911,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                   {!assetUrl ? (
                     <div onClick={() => fileInputRef.current?.click()} className="group cursor-pointer py-4 border-b border-brand-border hover:border-brand-text transition-colors flex items-center justify-between">
                       <span className="text-sm font-bold tracking-widest">Select Image</span>
-                      <ChevronRight className="w-3 h-3 text-stone-200 dark:text-stone-700 group-hover:translate-x-1 group-hover:text-brand-text transition-all" />
+                      <ChevronRight className="w-3 h-3 text-brand-text/30 group-hover:translate-x-1 group-hover:text-brand-text transition-all" />
                       <input type="file" ref={fileInputRef} onChange={onFileSelect} className="hidden" accept="image/*" />
                     </div>
                   ) : (
@@ -932,12 +919,12 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                       <button 
                         onClick={() => outputUrl && downloadBlob(outputUrl, `isolated-${Date.now()}.png`)}
                         disabled={!outputUrl || isProcessing} 
-                        className="w-full text-[10px] font-bold tracking-[0.4em] text-brand-text hover:opacity-10 dark:hover:opacity-30 transition-all flex items-center justify-between group disabled:opacity-10"
+                        className="w-full text-[10px] font-bold tracking-[0.4em] text-brand-text hover:opacity-50 transition-all flex items-center justify-between group disabled:opacity-10"
                       >
                         EXPORT PNG
-                        <Download className="w-3 h-3 group-hover:translate-y-0.5 transition-transform opacity-30" />
+                        <Download className="w-3 h-3 group-hover:translate-y-0.5 transition-transform opacity-40" />
                       </button>
-                      <button onClick={() => { setAssetUrl(null); setOutputUrl(null); }} className="w-full py-2 text-stone-300 dark:text-stone-700 hover:text-brand-text transition-colors text-[10px] font-bold tracking-[0.2em] flex items-center justify-center gap-2">
+                      <button onClick={() => { setAssetUrl(null); setOutputUrl(null); }} className="w-full py-2 text-brand-text/40 hover:text-brand-text transition-colors text-[10px] font-bold tracking-[0.2em] flex items-center justify-center gap-2">
                         <X className="w-2.5 h-2.5" />
                         Remove
                       </button>
@@ -979,7 +966,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     <span className="text-[10px] tracking-[0.4em] text-brand-text/50 uppercase font-medium">
                       GLIMPSE BUILDER
                     </span>
-                    <p className="text-[11px] text-stone-400 dark:text-stone-600 max-w-[240px] mt-2 font-light leading-relaxed">
+                    <p className="text-[11px] text-brand-text/50 max-w-[240px] mt-2 font-light leading-relaxed">
                       Create minimalist logotypes, customize vector proportions, or refine custom visual elements instantly.
                     </p>
                   </motion.div>
@@ -1093,11 +1080,11 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                           <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-brand-text/20" />
                           <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-brand-text/20" />
                           
-                          {/* Raw coordinates / dimensional labels - minimalist, clean, non-obtrusive */}
-                          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[7.5px] font-mono text-brand-text/40 bg-brand-bg/90 dark:bg-stone-900/90 px-1 py-0.5 rounded leading-none border border-brand-text/[0.04]">
+                           {/* Raw coordinates / dimensional labels - minimalist, clean, non-obtrusive */}
+                          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[7.5px] font-mono text-brand-text/45 bg-brand-bg border border-brand-border px-1 py-0.5 rounded leading-none shadow-sm">
                             W: {Math.round((builderText.trim() ? 96 : 160) * iconScale)}px
                           </div>
-                          <div className="absolute -right-11 top-1/2 -translate-y-1/2 text-[7.5px] font-mono text-brand-text/40 bg-brand-bg/90 dark:bg-stone-900/90 px-1 py-0.5 rounded leading-none border border-brand-text/[0.04] rotate-90 origin-center">
+                          <div className="absolute -right-11 top-1/2 -translate-y-1/2 text-[7.5px] font-mono text-brand-text/45 bg-brand-bg border border-brand-border px-1 py-0.5 rounded leading-none shadow-sm rotate-90 origin-center">
                             H: {Math.round((builderText.trim() ? 144 : 160) * iconScale)}px
                           </div>
                         </div>
@@ -1169,7 +1156,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         </div>
 
         <footer className="mt-24 md:mt-40 pt-12 border-t border-brand-border">
-          <p className="text-[9px] font-bold tracking-[0.6em] text-stone-200 dark:text-stone-800">
+          <p className="text-[9px] font-bold tracking-[0.6em] text-brand-text/30">
              &copy; {new Date().getFullYear()} GLIMPSE
           </p>
         </footer>
