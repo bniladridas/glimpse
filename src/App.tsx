@@ -121,6 +121,21 @@ export default function App() {
   
   const builderRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: Event) {
+      if (sidebarRef.current && !sidebarRef.current.contains(event.target as Node)) {
+        setIsSidebarHovered(false);
+      }
+    }
+    document.addEventListener("mousedown", handleClickOutside);
+    document.addEventListener("touchstart", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, []);
 
   const filteredSymbols = LOGO_SYMBOLS.filter(symbol => {
     const matchesCategory = iconCategory === "all" || SYMBOL_CATEGORIES[iconCategory]?.includes(symbol);
@@ -374,12 +389,12 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
   return (
     <div className="min-h-screen bg-brand-bg font-sans text-brand-text selection:bg-stone-100 transition-colors duration-300 flex flex-col">
       {/* Premium edge-to-edge top header */}
-      <header className="w-full border-b border-brand-border/10 py-4 px-6 md:px-12 flex items-center justify-between bg-transparent transition-colors duration-300">
-        <div className="flex items-center gap-8 relative">
-          <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all">
+      <header className="w-full border-b border-brand-border/10 py-4 px-4 md:px-12 flex items-center justify-between bg-transparent transition-colors duration-300">
+        <div className="flex items-center gap-3 md:gap-8 relative">
+          <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all flex-shrink-0">
             <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
           </div>
-          <div className="flex gap-8 relative border-l border-brand-border/10 pl-8">
+          <div className="flex gap-4 md:gap-8 relative border-l border-brand-border/10 pl-3 md:pl-8">
             {[
               { id: "create", label: "LOGO" },
               { id: "isolate", label: "CLEAN" },
@@ -1253,9 +1268,15 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
 
         {/* Quiet, extra clever hover-reveal sidebar for emberlamp */}
         <motion.div
+          ref={sidebarRef}
           onMouseEnter={() => setIsSidebarHovered(true)}
           onMouseLeave={() => setIsSidebarHovered(false)}
-          className="fixed right-0 top-1/2 -translate-y-1/2 z-50 hidden md:flex items-center bg-brand-bg/95 backdrop-blur-md border-y border-l border-brand-border/40 rounded-l-xl shadow-2xl overflow-hidden"
+          onClick={() => {
+            if (!isSidebarHovered) {
+              setIsSidebarHovered(true);
+            }
+          }}
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center bg-brand-bg/95 backdrop-blur-md border-y border-l border-brand-border/40 rounded-l-xl shadow-2xl overflow-hidden cursor-pointer"
           animate={{
             width: isSidebarHovered ? 290 : 38,
             height: isSidebarHovered ? 160 : 110,
@@ -1264,7 +1285,15 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         >
           <div className="flex h-full w-full items-center">
             {/* Persistent dock tab indicator */}
-            <div className="w-[38px] flex flex-col items-center justify-between py-5 h-full border-r border-brand-border/10 cursor-pointer text-brand-text/35 hover:text-[#ea580c] transition-colors">
+            <div 
+              onClick={(e) => {
+                if (isSidebarHovered) {
+                  e.stopPropagation();
+                  setIsSidebarHovered(false);
+                }
+              }}
+              className="w-[38px] flex flex-col items-center justify-between py-5 h-full border-r border-brand-border/10 cursor-pointer text-brand-text/35 hover:text-[#ea580c] transition-colors"
+            >
               <Icons.Flame className="w-3.5 h-3.5 text-orange-500 animate-pulse" />
               <div className="text-[7.5px] tracking-[0.25em] font-mono [writing-mode:vertical-lr] select-none text-brand-text/30 uppercase font-medium">
                 emberlamp
