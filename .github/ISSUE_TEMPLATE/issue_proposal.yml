@@ -1,0 +1,34 @@
+name: Feature Proposal or Issue
+description: Submit a proposal for a new feature or report an issue.
+labels: ["enhancement", "bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thank you for suggesting an enhancement or reporting an issue! External contributors are requested to first raise an issue or draft a design proposal for alignment before writing submission or pull request code.
+  - type: dropdown
+    id: contribution-type
+    attributes:
+      label: Contribution Type
+      options:
+        - Design Proposal
+        - Bug Report
+        - Feature Request
+        - Other
+    validations:
+      required: true
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      placeholder: Describe the proposal, issue, or enhancement clearly.
+    validations:
+      required: true
+  - type: textarea
+    id: specs
+    attributes:
+      label: Development Context
+      description: Provide any technical descriptions, specs, or context (e.g., target frameworks SVG support).
+      placeholder: (optional) rust / kotlin / dart versioning or integration environment details
+    validations:
+      required: false

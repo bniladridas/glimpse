@@ -41,6 +41,7 @@ const CANVAS_COLORS = [
 ];
 
 const CHANGELOG = [
+  { version: "v1.24", date: "Today", features: ["Integrated a dedicated Rust code exporter generating optimal, safe zero-cost raw static string slices (r##\"<svg>...</svg>\"##) for immediate use in any Rust GUI framework (egui, iced, yew)"] },
   { version: "v1.23", date: "Today", features: ["Added a dedicated browser layout & navigation category containing standard browser actions (Home, Search, Download, Share, Copy, ExternalLink, Maximize, Settings, Sliders, Globe, Trash, Link, ArrowUpRight, etc.)"] },
   { version: "v1.21", date: "Today", features: ["Introduced a floating 'Symbol Atelier' popout drawer that anchors alongside the controls panel, completely preventing vertical layout clutter", "Created a high-contrast inline preview section with responsive focus tiles and immediate category shortcuts", "Perfected responsive overlays with fluid spring gestures on mobile screens"] },
   { version: "v1.20", date: "Today", features: ["Replaced horizontal category scrolling with flexwrap containers to eradicate browser scrollbar overlays and restore instantaneous icon selection"] },
@@ -106,6 +107,7 @@ export default function App() {
   const [iconScale, setIconScale] = useState(1.0);
   const [strokeWidth, setStrokeWidth] = useState(1.5);
   const [copiedType, setCopiedType] = useState<string | null>(null);
+  const [isMoreCopyOpen, setIsMoreCopyOpen] = useState(false);
   const [showGuides, setShowGuides] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
@@ -239,14 +241,14 @@ export default function App() {
     img.src = url;
   };
 
-  const copyIconCode = (type: "react" | "svg") => {
+  const copyIconCode = (type: "react" | "svg" | "rust" | "kotlin" | "dart") => {
     if (type === "react") {
       const componentName = builderIcon === "NodeTree" ? "NodeTree" : builderIcon;
       const snippet = `import { ${componentName} } from 'lucide-react';\n\n// Usage\n<${componentName} size={24} strokeWidth={${strokeWidth}} />`;
       navigator.clipboard.writeText(snippet);
       setCopiedType("react");
       setTimeout(() => setCopiedType(null), 2000);
-    } else {
+    } else if (type === "svg") {
       const rawSvg = document.querySelector("#preview-symbol svg");
       if (rawSvg) {
         const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
@@ -260,6 +262,79 @@ export default function App() {
         svgData = svgData.replace(/currentColor/g, customColor);
         navigator.clipboard.writeText(svgData);
         setCopiedType("svg");
+        setTimeout(() => setCopiedType(null), 2000);
+      }
+    } else if (type === "rust") {
+      const rawSvg = document.querySelector("#preview-symbol svg");
+      if (rawSvg) {
+        const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
+        svgClone.removeAttribute("class");
+        svgClone.removeAttribute("style");
+        svgClone.setAttribute("width", "24");
+        svgClone.setAttribute("height", "24");
+        svgClone.setAttribute("stroke-width", strokeWidth.toString());
+        svgClone.setAttribute("stroke", customColor);
+        let svgData = new XMLSerializer().serializeToString(svgClone);
+        svgData = svgData.replace(/currentColor/g, customColor);
+        
+        // Convert PascalCase or camelCase to Rust SCREAMING_SNAKE_CASE const name
+        const screamingSnake = builderIcon
+          .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+          .toUpperCase();
+          
+        const snippet = `// Rust - Embed SVG String constant (safe, zero-cost raw literal)
+pub const ${screamingSnake}_ICON: &str = r##"${svgData}"##;`;
+        
+        navigator.clipboard.writeText(snippet);
+        setCopiedType("rust");
+        setTimeout(() => setCopiedType(null), 2000);
+      }
+    } else if (type === "kotlin") {
+      const rawSvg = document.querySelector("#preview-symbol svg");
+      if (rawSvg) {
+        const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
+        svgClone.removeAttribute("class");
+        svgClone.removeAttribute("style");
+        svgClone.setAttribute("width", "24");
+        svgClone.setAttribute("height", "24");
+        svgClone.setAttribute("stroke-width", strokeWidth.toString());
+        svgClone.setAttribute("stroke", customColor);
+        let svgData = new XMLSerializer().serializeToString(svgClone);
+        svgData = svgData.replace(/currentColor/g, customColor);
+        
+        const screamingSnake = builderIcon
+          .replace(/([a-z0-9])([A-Z])/g, "$1_$2")
+          .toUpperCase();
+          
+        const snippet = `// Kotlin (Jetpack Compose) - Multiplatform SVG Resource String
+const val ${screamingSnake}_SVG_ASSET = """
+${svgData}
+""".trimIndent()`;
+        
+        navigator.clipboard.writeText(snippet);
+        setCopiedType("kotlin");
+        setTimeout(() => setCopiedType(null), 2000);
+      }
+    } else if (type === "dart") {
+      const rawSvg = document.querySelector("#preview-symbol svg");
+      if (rawSvg) {
+        const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
+        svgClone.removeAttribute("class");
+        svgClone.removeAttribute("style");
+        svgClone.setAttribute("width", "24");
+        svgClone.setAttribute("height", "24");
+        svgClone.setAttribute("stroke-width", strokeWidth.toString());
+        svgClone.setAttribute("stroke", customColor);
+        let svgData = new XMLSerializer().serializeToString(svgClone);
+        svgData = svgData.replace(/currentColor/g, customColor);
+        
+        const camelCaseIcon = builderIcon.charAt(0).toLowerCase() + builderIcon.slice(1);
+        
+        const snippet = `// Dart (Flutter) - Vector String Constant (compatible with flutter_svg)
+const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
+        
+        navigator.clipboard.writeText(snippet);
+        setCopiedType("dart");
         setTimeout(() => setCopiedType(null), 2000);
       }
     }
@@ -492,7 +567,7 @@ export default function App() {
                   </div>
 
                   {/* Dev Code Copiers */}
-                  <div className="flex items-center justify-end gap-2.5 text-[8px] sm:text-[9px] text-stone-400 dark:text-stone-500 font-mono select-none">
+                  <div className="flex items-center justify-end gap-2.5 text-[8px] sm:text-[9px] text-stone-400 dark:text-stone-500 font-mono select-none relative">
                     <span className="text-[8px] text-stone-300 dark:text-stone-800 uppercase tracking-wider">Use in code:</span>
                     <button
                       onClick={() => copyIconCode("react")}
@@ -507,6 +582,69 @@ export default function App() {
                     >
                       {copiedType === "svg" ? "SVG (Copied)" : "SVG"}
                     </button>
+                    <span className="text-stone-300 dark:text-stone-800">•</span>
+                    
+                    {/* Extra Clever Native Formats Popover - Quiet, elegant, zero clutter */}
+                    <div className="relative inline-block" id="more-copy-dropdown">
+                      <button
+                        onClick={() => setIsMoreCopyOpen(!isMoreCopyOpen)}
+                        className="hover:text-brand-text cursor-pointer transition-colors duration-150 flex items-center gap-0.5 underline decoration-stone-200 dark:decoration-stone-800 underline-offset-2"
+                      >
+                        {copiedType === "rust" || copiedType === "kotlin" || copiedType === "dart" 
+                          ? `${copiedType.charAt(0).toUpperCase() + copiedType.slice(1)} (Copied)`
+                          : "More ▾"}
+                      </button>
+
+                      <AnimatePresence>
+                        {isMoreCopyOpen && (
+                          <>
+                            {/* Quiet background touch panel close wrapper */}
+                            <div 
+                              className="fixed inset-0 z-40 bg-transparent"
+                              onClick={() => setIsMoreCopyOpen(false)}
+                            />
+                            <motion.div
+                              initial={{ opacity: 0, y: 5, scale: 0.95 }}
+                              animate={{ opacity: 1, y: 0, scale: 1 }}
+                              exit={{ opacity: 0, y: 5, scale: 0.95 }}
+                              transition={{ duration: 0.15 }}
+                              className="absolute right-0 bottom-full mb-2 w-32 bg-stone-50 dark:bg-stone-900 border border-brand-border/15 dark:border-stone-800 rounded shadow-md p-1 z-50 flex flex-col gap-0.5"
+                            >
+                              <div className="px-1.5 py-0.5 text-[7px] text-stone-400 dark:text-stone-500 uppercase tracking-wider border-b border-brand-border/5 mb-0.5 select-none">
+                                native formats
+                              </div>
+                              <button
+                                onClick={() => {
+                                  copyIconCode("rust");
+                                  setIsMoreCopyOpen(false);
+                                }}
+                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-stone-400 dark:text-stone-500 cursor-pointer"
+                              >
+                                Rust (String)
+                              </button>
+                              <button
+                                onClick={() => {
+                                  copyIconCode("kotlin");
+                                  setIsMoreCopyOpen(false);
+                                }}
+                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-stone-400 dark:text-stone-500 cursor-pointer"
+                              >
+                                Kotlin (Compose)
+                              </button>
+                              <button
+                                onClick={() => {
+                                  copyIconCode("dart");
+                                  setIsMoreCopyOpen(false);
+                                }}
+                                className="w-full text-left px-1.5 py-1 rounded hover:bg-brand-text/[0.04] text-[8px] sm:text-[9px] hover:text-brand-text transition-colors duration-150 text-stone-400 dark:text-stone-500 cursor-pointer"
+                              >
+                                Dart (Flutter Svg)
+                              </button>
+                            </motion.div>
+                          </>
+                        )}
+                      </AnimatePresence>
+                    </div>
                   </div>
 
                   {/* Floating Symbol Atelier Popout */}
