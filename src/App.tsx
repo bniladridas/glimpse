@@ -215,15 +215,35 @@ export default function App() {
 
     let isMounted = true;
 
-    supabase.auth.getSession().then(({ data, error }) => {
+    async function loadAuthSession() {
+      const authCode = new URL(window.location.href).searchParams.get("code");
+      let session = null;
+
+      if (authCode) {
+        const { data, error } = await supabase.auth.exchangeCodeForSession(authCode);
+        if (!isMounted) return;
+
+        if (error) {
+          setAuthError(error.message);
+        } else {
+          session = data.session;
+        }
+      }
+
+      const { data, error } = await supabase.auth.getSession();
       if (!isMounted) return;
+
       if (error) {
         setAuthError(error.message);
       }
-      setAuthSession(data.session);
+
+      const currentSession = data.session ?? session;
+      setAuthSession(currentSession);
       setIsAuthLoading(false);
-      scheduleAuthUrlCleanup(Boolean(data.session));
-    });
+      scheduleAuthUrlCleanup(Boolean(currentSession));
+    }
+
+    loadAuthSession();
 
     const {
       data: { subscription },
