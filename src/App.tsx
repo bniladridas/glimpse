@@ -871,22 +871,43 @@ export default function App() {
                       backgroundColor: customBgColor
                     }}
                   >
-                    {/* CAD Guides Overlay System - Non-destructive, very quiet visually */}
+                    {/* CAD Guides Overlay System - Non-destructive, fades in on hover, very quiet visually */}
                     {showGuides && (
-                      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
-                        {/* Bisecting axes */}
-                        <div className="absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-brand-text/[0.04]" />
-                        <div className="absolute left-1/2 top-0 bottom-0 w-px border-l border-dashed border-brand-text/[0.04]" />
+                      <div 
+                        className="absolute inset-0 pointer-events-none overflow-hidden select-none transition-opacity duration-300"
+                        style={{ opacity: isHovered ? 1 : 0 }}
+                      >
+                        {/* Bisecting axes (extremely faint solid lines instead of loud dashes) */}
+                        <div className="absolute top-1/2 left-0 right-0 h-px bg-brand-text/[0.025]" />
+                        <div className="absolute left-1/2 top-0 bottom-0 w-px bg-brand-text/[0.025]" />
                         
-                        {/* Golden ratio/thirds guide lines - very quiet */}
-                        <div className="absolute top-1/3 left-0 right-0 h-px border-t border-dashed border-brand-text/[0.015]" />
-                        <div className="absolute top-2/3 left-0 right-0 h-px border-t border-dashed border-brand-text/[0.015]" />
-                        <div className="absolute left-1/3 top-0 bottom-0 w-px border-l border-dashed border-brand-text/[0.015]" />
-                        <div className="absolute left-2/3 top-0 bottom-0 w-px border-l border-dashed border-brand-text/[0.015]" />
+                        {/* Alignment indicators next to crosshair center */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-4 h-4 border border-brand-text/[0.06] rounded-full" />
 
-                        {/* Concentric targets */}
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border border-dashed border-brand-text/[0.03]" />
-                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-dashed border-brand-text/[0.015]" />
+                        {/* Interactive cursor alignment crosshairs - dynamic tracker */}
+                        {isHovered && (
+                          <>
+                            <div 
+                              className="absolute left-0 right-0 h-px border-t border-dotted border-brand-text/[0.03] transition-all duration-75"
+                              style={{ top: mousePos.y }}
+                            />
+                            <div 
+                              className="absolute top-0 bottom-0 w-px border-l border-dotted border-brand-text/[0.03] transition-all duration-75"
+                              style={{ left: mousePos.x }}
+                            />
+                            {/* Tiny coordinates bubble right at cursor */}
+                            <div 
+                              className="absolute pointer-events-none text-[8px] font-mono text-brand-text/30 bg-brand-bg/60 dark:bg-stone-900/60 px-1 py-0.5 rounded leading-none border border-brand-text/[0.03] -translate-x-1/2 -translate-y-[20px]"
+                              style={{ left: mousePos.x, top: mousePos.y }}
+                            >
+                              {mousePos.x}, {mousePos.y}
+                            </div>
+                          </>
+                        )}
+
+                        {/* Concentric subtle target bounds */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border border-dashed border-brand-text/[0.02]" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-dashed border-brand-text/[0.012]" />
 
                         {/* Tech-driven corner croppers */}
                         <div className="absolute top-4 left-4 w-2 h-2 border-t border-l border-brand-text/10" />
@@ -896,29 +917,54 @@ export default function App() {
                       </div>
                     )}
 
-                    {/* Interactive UI Overlay Controls (top & bottom edges) - completely hidden on image saves */}
-                    <div className="absolute inset-x-4 top-4 flex justify-between items-center pointer-events-auto select-none">
+                    {/* Interactive UI Overlay Controls (top & bottom edges) - completely hidden on image saves, fades dynamically */}
+                    <div 
+                      className="absolute inset-x-4 top-4 flex justify-between items-center pointer-events-auto select-none transition-opacity duration-300"
+                      style={{ opacity: isHovered ? 1 : 0.3 }}
+                    >
                       {/* Guides status option toggle */}
                       <button 
                         onClick={() => setShowGuides(!showGuides)}
-                        className="text-[8px] font-mono tracking-widest text-brand-text/30 hover:text-brand-text transition-colors duration-200 capitalize"
+                        className="text-[8px] font-mono tracking-widest text-brand-text/30 hover:text-brand-text transition-colors duration-200 capitalize cursor-pointer"
                       >
                         [guides: {showGuides ? "on" : "off"}]
                       </button>
 
-                      {/* Quiet cursor coordinates display */}
-                      <span className="text-[8px] font-mono tracking-widest text-brand-text/30 select-none">
-                        {isHovered ? `X:${mousePos.x} Y:${mousePos.y}` : "COORDINATES"}
+                      {/* Quiet status banner, very simple */}
+                      <span className="text-[8px] font-mono tracking-widest text-brand-text/30">
+                        {showGuides ? "PREVIEW ALIGNMENT ENGINE" : "CLEAN VIEW"}
                       </span>
                     </div>
 
-                    <div className="absolute inset-x-4 bottom-4 flex justify-between items-center pointer-events-none select-none text-[8px] font-mono tracking-widest text-brand-text/25">
-                      <span>SIZE: {Math.round(iconScale * 100)}%</span>
+                    <div 
+                      className="absolute inset-x-4 bottom-4 flex justify-between items-center pointer-events-none select-none text-[8px] font-mono tracking-widest text-brand-text/25 transition-opacity duration-300"
+                      style={{ opacity: isHovered ? 1 : 0.2 }}
+                    >
+                      <span>SCALE: {Math.round(iconScale * 100)}%</span>
                       <span className="uppercase">{builderFont.name} / {builderTextWeight}</span>
                     </div>
 
                     {/* Outer centered composition block */}
-                    <div className="flex flex-col items-center gap-6 relative z-10">
+                    <div className="flex flex-col items-center gap-6 relative z-10 group/logo">
+                      {/* Geometry dimension boundaries - visible only on active guide hover */}
+                      {showGuides && isHovered && (
+                        <div className="absolute -inset-6 border border-brand-text/[0.03] transition-all duration-300 rounded pointer-events-none select-none animate-in fade-in zoom-in-95">
+                          {/* Sizing box ticks */}
+                          <div className="absolute -top-1 -left-1 w-2.5 h-2.5 border-t border-l border-brand-text/20" />
+                          <div className="absolute -top-1 -right-1 w-2.5 h-2.5 border-t border-r border-brand-text/20" />
+                          <div className="absolute -bottom-1 -left-1 w-2.5 h-2.5 border-b border-l border-brand-text/20" />
+                          <div className="absolute -bottom-1 -right-1 w-2.5 h-2.5 border-b border-r border-brand-text/20" />
+                          
+                          {/* Raw coordinates / dimensional labels - minimalist, clean, non-obtrusive */}
+                          <div className="absolute -top-5 left-1/2 -translate-x-1/2 text-[7.5px] font-mono text-brand-text/40 bg-brand-bg/90 dark:bg-stone-900/90 px-1 py-0.5 rounded leading-none border border-brand-text/[0.04]">
+                            W: {Math.round((builderText.trim() ? 96 : 160) * iconScale)}px
+                          </div>
+                          <div className="absolute -right-11 top-1/2 -translate-y-1/2 text-[7.5px] font-mono text-brand-text/40 bg-brand-bg/90 dark:bg-stone-900/90 px-1 py-0.5 rounded leading-none border border-brand-text/[0.04] rotate-90 origin-center">
+                            H: {Math.round((builderText.trim() ? 144 : 160) * iconScale)}px
+                          </div>
+                        </div>
+                      )}
+
                       <div id="preview-symbol">
                         <DynamicIcon 
                           name={builderIcon} 
@@ -928,7 +974,7 @@ export default function App() {
                           style={{ 
                             color: customColor
                           }} 
-                          className="transition-all duration-300" 
+                          className="transition-all duration-300 animate-in fade-in zoom-in-95" 
                         />
                       </div>
                       {builderText.trim() && (
