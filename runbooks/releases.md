@@ -1,0 +1,68 @@
+# Releases
+
+## macOS
+
+Workflow:
+
+```text
+.github/workflows/release-macos.yml
+```
+
+Manual run:
+
+```text
+Actions > Release macOS DMG > Run workflow
+```
+
+Tag release:
+
+```bash
+git tag v0.0.0
+git push origin v0.0.0
+```
+
+Artifact:
+
+```text
+release/*.dmg
+```
+
+## Android
+
+Workflow:
+
+```text
+.github/workflows/release-android.yml
+```
+
+Manual run:
+
+```text
+Actions > Release Android APK > Run workflow
+```
+
+Tag release:
+
+```bash
+git tag v0.0.0
+git push origin v0.0.0
+```
+
+Artifact:
+
+```text
+android/app/build/outputs/apk/debug/app-debug.apk
+```
+
+## GitHub secrets
+
+Set these repository secrets:
+
+```bash
+VITE_SUPABASE_URL=https://<supabase-project-ref>.supabase.co
+VITE_SUPABASE_ANON_KEY=<supabase-anon-key>
+VITE_SUPABASE_DESKTOP_REDIRECT_URL=glimpse://auth/callback
+VITE_SUPABASE_ANDROID_REDIRECT_URL=com.niladridas.glimpse://auth/callback
+```
+
+Do not add service role keys, OAuth client secrets, signing passwords, or keystores as plain files.

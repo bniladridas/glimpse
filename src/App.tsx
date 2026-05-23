@@ -15,7 +15,7 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
   computer: ["Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse"],
   academic: ["GraduationCap", "BookOpen", "Book", "School", "Library", "Trophy", "Calculator", "Award", "PenTool", "Feather", "Bookmark", "Brain", "Microscope"],
   corporate: ["Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign"],
-  shapes: ["Workflow", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
+  shapes: ["NodeTree", "Workflow", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
   nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
   browser: ["Home", "Search", "Download", "Share2", "Copy", "ExternalLink", "Maximize2", "Plus", "Settings", "SlidersHorizontal", "Globe", "Link", "ArrowUpRight", "RefreshCw", "Folder", "Menu", "AppWindow", "Trash2"],
   tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"],
@@ -112,6 +112,42 @@ function scheduleAuthUrlCleanup(includeCode = false) {
   removeAuthUrlParts(includeCode);
   window.setTimeout(() => removeAuthUrlParts(includeCode), 0);
   window.setTimeout(() => removeAuthUrlParts(includeCode), 250);
+}
+
+function getOAuthRedirectUrl() {
+  const isDesktop = window.location.protocol === "file:" || navigator.userAgent.toLowerCase().includes("electron");
+  if (isDesktop) {
+    return import.meta.env.VITE_SUPABASE_DESKTOP_REDIRECT_URL || "glimpse://auth/callback";
+  }
+
+  return `${window.location.origin}/`;
+}
+
+function getAndroidOAuthRedirectUrl() {
+  return import.meta.env.VITE_SUPABASE_ANDROID_REDIRECT_URL || "com.niladridas.glimpse://auth/callback";
+}
+
+async function isCapacitorNativePlatform() {
+  try {
+    const { Capacitor } = await import("@capacitor/core");
+    return Capacitor.isNativePlatform();
+  } catch {
+    return false;
+  }
+}
+
+function getReadableCanvasTextColor(hexColor: string) {
+  const normalized = hexColor.replace("#", "");
+  if (!/^[0-9a-fA-F]{6}$/.test(normalized)) {
+    return "#fafaf9";
+  }
+
+  const red = parseInt(normalized.slice(0, 2), 16) / 255;
+  const green = parseInt(normalized.slice(2, 4), 16) / 255;
+  const blue = parseInt(normalized.slice(4, 6), 16) / 255;
+  const luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+
+  return luminance > 0.58 ? "#1c1917" : "#fafaf9";
 }
 
 export default function App() {
@@ -260,21 +296,57 @@ export default function App() {
     };
   }, []);
 
+  useEffect(() => {
+    let listener: { remove: () => Promise<void> } | null = null;
+
+    async function listenForNativeAuthCallback() {
+      if (!(await isCapacitorNativePlatform())) {
+        return;
+      }
+
+      const { App } = await import("@capacitor/app");
+      listener = await App.addListener("appUrlOpen", async ({ url }) => {
+        if (!url.startsWith(getAndroidOAuthRedirectUrl())) {
+          return;
+        }
+
+        const callbackUrl = new URL(url);
+        const { Browser } = await import("@capacitor/browser");
+        await Browser.close().catch(() => undefined);
+        window.location.href = `${window.location.origin}${window.location.pathname}${callbackUrl.search}${callbackUrl.hash}`;
+      });
+    }
+
+    listenForNativeAuthCallback();
+
+    return () => {
+      listener?.remove();
+    };
+  }, []);
+
   const signInWithGoogle = async () => {
     if (!supabase) return;
     setIsAuthLoading(true);
     setAuthError(null);
+    const isNativeMobile = await isCapacitorNativePlatform();
 
-    const { error } = await supabase.auth.signInWithOAuth({
+    const { data, error } = await supabase.auth.signInWithOAuth({
       provider: "google",
       options: {
-        redirectTo: `${window.location.origin}/`,
+        redirectTo: isNativeMobile ? getAndroidOAuthRedirectUrl() : getOAuthRedirectUrl(),
+        skipBrowserRedirect: isNativeMobile,
       },
     });
 
     if (error) {
       setAuthError(error.message);
       setIsAuthLoading(false);
+      return;
+    }
+
+    if (isNativeMobile && data.url) {
+      const { Browser } = await import("@capacitor/browser");
+      await Browser.open({ url: data.url });
     }
   };
 
@@ -537,15 +609,20 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
     return <IconComponent className={className} style={style} strokeWidth={strokeWidth ?? 1.5} size={width || height || 20} />;
   };
 
+  const isDesktopShell = window.location.protocol === "file:" || navigator.userAgent.toLowerCase().includes("electron");
+  const emptyPreviewColor = isBgTransparent
+    ? theme === "light" ? "#1c1917" : "#fafaf9"
+    : getReadableCanvasTextColor(customBgColor);
+  const canvasOverlayColor = emptyPreviewColor;
+
   return (
     <div className="min-h-screen bg-brand-bg font-sans text-brand-text selection:bg-stone-100 transition-colors duration-300 flex flex-col">
       {/* Premium edge-to-edge top header */}
-      <header className="w-full border-b border-brand-border/10 py-4 px-4 md:px-12 flex items-center justify-between bg-transparent transition-colors duration-300">
-        <div className="flex items-center gap-3 md:gap-8 relative">
-          <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all flex-shrink-0">
-            <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
-          </div>
-          <div className="flex gap-1.5 sm:gap-2.5 relative border-l border-brand-border/10 pl-2.5 md:pl-8">
+      <header className={`w-full border-b border-brand-border/10 py-4 flex items-center justify-between bg-transparent transition-colors duration-300 ${
+        isDesktopShell ? "pl-32 pr-4 md:pl-36 md:pr-12" : "px-4 md:px-12"
+      }`} style={isDesktopShell ? { WebkitAppRegion: "drag" } as React.CSSProperties : undefined}>
+        <div className="flex items-center gap-3 md:gap-8 relative" style={isDesktopShell ? { WebkitAppRegion: "no-drag" } as React.CSSProperties : undefined}>
+          <div className="flex gap-1.5 sm:gap-2.5 relative">
             {NAV_TABS.map((tab) => (
               <div key={tab.id} className="group relative">
                 <button 
@@ -575,7 +652,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
           </div>
         </div>
         
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-4" style={isDesktopShell ? { WebkitAppRegion: "no-drag" } as React.CSSProperties : undefined}>
           {authSession && (
             <div className="flex items-center gap-3">
               <div className="group relative">
@@ -1439,13 +1516,19 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                               className="absolute top-0 bottom-0 w-px border-l border-dotted border-brand-text/[0.03] transition-all duration-75"
                               style={{ left: mousePos.x }}
                             />
-                            {/* Tiny coordinates bubble right at cursor */}
-                            <div 
-                              className="absolute pointer-events-none text-[8px] font-mono text-brand-text/30 bg-brand-bg/60 dark:bg-stone-900/60 px-1 py-0.5 rounded leading-none border border-brand-text/[0.03] -translate-x-1/2 -translate-y-[20px]"
-                              style={{ left: mousePos.x, top: mousePos.y }}
-                            >
-                              {mousePos.x}, {mousePos.y}
-                            </div>
+	                            {/* Tiny coordinates bubble right at cursor */}
+	                            <div 
+	                              className="absolute pointer-events-none text-[8px] font-mono bg-brand-bg/60 dark:bg-stone-900/60 px-1 py-0.5 rounded leading-none -translate-x-1/2 -translate-y-[20px]"
+	                              style={{
+                                  left: mousePos.x,
+                                  top: mousePos.y,
+                                  color: canvasOverlayColor,
+                                  opacity: 0.42,
+                                  borderColor: `${canvasOverlayColor}14`,
+                                }}
+	                            >
+	                              {mousePos.x}, {mousePos.y}
+	                            </div>
                           </>
                         )}
 
@@ -1466,24 +1549,28 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                       className="absolute inset-x-4 top-4 flex justify-between items-center pointer-events-auto select-none transition-opacity duration-300"
                       style={{ opacity: isHovered ? 1 : 0.3 }}
                     >
-                      {/* Guides status option toggle */}
-                      <button 
-                        onClick={() => setShowGuides(!showGuides)}
-                        className="text-[8px] font-mono tracking-widest text-brand-text/30 hover:text-brand-text transition-colors duration-200 capitalize cursor-pointer"
-                      >
-                        [guides: {showGuides ? "on" : "off"}]
-                      </button>
+	                      {/* Guides status option toggle */}
+	                      <button 
+	                        onClick={() => setShowGuides(!showGuides)}
+	                        className="text-[8px] font-mono tracking-widest transition-opacity duration-200 capitalize cursor-pointer hover:opacity-75"
+                          style={{ color: canvasOverlayColor, opacity: 0.42 }}
+	                      >
+	                        [guides: {showGuides ? "on" : "off"}]
+	                      </button>
 
-                      {/* Quiet status banner, very simple */}
-                      <span className="text-[8px] font-mono tracking-widest text-brand-text/30">
-                        {showGuides ? "PREVIEW ALIGNMENT ENGINE" : "CLEAN VIEW"}
-                      </span>
-                    </div>
+	                      {/* Quiet status banner, very simple */}
+	                      <span
+                          className="text-[8px] font-mono tracking-widest"
+                          style={{ color: canvasOverlayColor, opacity: 0.42 }}
+                        >
+	                        {showGuides ? "PREVIEW ALIGNMENT ENGINE" : "CLEAN VIEW"}
+	                      </span>
+	                    </div>
 
-                    <div 
-                      className="absolute inset-x-4 bottom-4 flex justify-between items-center pointer-events-none select-none text-[8px] font-mono tracking-widest text-brand-text/25 transition-opacity duration-300"
-                      style={{ opacity: isHovered ? 1 : 0.2 }}
-                    >
+	                    <div 
+	                      className="absolute inset-x-4 bottom-4 flex justify-between items-center pointer-events-none select-none text-[8px] font-mono tracking-widest transition-opacity duration-300"
+	                      style={{ color: canvasOverlayColor, opacity: isHovered ? 0.38 : 0.18 }}
+	                    >
                       <span>SCALE: {Math.round(iconScale * 100)}%</span>
                       <span className="uppercase">{builderFont.name} / {builderTextWeight}</span>
                     </div>
@@ -1614,19 +1701,25 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     } : {
                       backgroundColor: customBgColor
                     }}
-                  >
-                    {!assetUrl && !isProcessing ? (
-                      <div className="flex flex-col items-center gap-6 opacity-20 text-brand-text font-bold tracking-[0.5em] text-[10px]">
-                         <div className="w-px h-12 bg-brand-text" />
-                         No Image
-                      </div>
+	                  >
+	                    {!assetUrl && !isProcessing ? (
+	                      <div
+                          className="flex flex-col items-center gap-6 font-bold tracking-[0.5em] text-[10px]"
+                          style={{ color: emptyPreviewColor, opacity: 0.36 }}
+                        >
+	                         <div className="w-px h-12" style={{ backgroundColor: emptyPreviewColor }} />
+	                         No Image
+	                      </div>
                     ) : (
                       <>
                         {isProcessing && (
                           <div className="absolute inset-0 z-20 flex items-center justify-center pointer-events-none">
-                            <span className="text-[10px] font-bold text-brand-text/30 tracking-[0.5em] animate-pulse">
-                              {progress}%
-                            </span>
+	                            <span
+                                className="text-[10px] font-bold tracking-[0.5em] animate-pulse"
+                                style={{ color: emptyPreviewColor, opacity: 0.42 }}
+                              >
+	                              {progress}%
+	                            </span>
                           </div>
                         )}
                         {outputUrl && <img src={outputUrl} alt="Output" className="max-w-full max-h-full object-contain drop-shadow-[0_20px_40px_rgba(0,0,0,0.06)] dark:drop-shadow-[0_20px_40px_rgba(0,0,0,0.5)]" />}
@@ -1638,12 +1731,6 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
             </div>
           </div>
         </div>
-
-        <footer className="mt-24 md:mt-40 pt-12 border-t border-brand-border flex items-center justify-between gap-4">
-          <p className="text-[9px] font-bold tracking-[0.6em] text-brand-text/30 uppercase">
-             &copy; {new Date().getFullYear()} GLIMPSE
-          </p>
-        </footer>
 
         {/* Quiet, extra clever hover-reveal sidebar for emberlamp */}
         <motion.div
