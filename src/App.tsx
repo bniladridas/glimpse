@@ -3,6 +3,8 @@ import { Download, Image as ImageIcon, Upload, CheckCircle2, ChevronRight, X, Lo
 import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { removeBackground } from "@imgly/background-removal";
+// @ts-ignore
+import readmeText from "../README.md?raw";
 
 // Curated list of symbols for the deterministic builder and categories
 const SYMBOL_CATEGORIES: Record<string, string[]> = {
@@ -10,10 +12,12 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
   computer: ["Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse"],
   academic: ["GraduationCap", "BookOpen", "Book", "School", "Library", "Trophy", "Calculator", "Award", "PenTool", "Feather", "Bookmark", "Brain", "Microscope"],
   corporate: ["Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign"],
-  shapes: ["NodeTree", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
+  shapes: ["Workflow", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
   nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
   browser: ["Home", "Search", "Download", "Share2", "Copy", "ExternalLink", "Maximize2", "Plus", "Settings", "SlidersHorizontal", "Globe", "Link", "ArrowUpRight", "RefreshCw", "Folder", "Menu", "AppWindow", "Trash2"],
-  tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"]
+  tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"],
+  social: ["User", "Users", "UserPlus", "UserMinus", "UserCheck", "Contact", "Smile", "Heart", "Handshake", "Sparkles", "Mail", "MessageCircle", "PartyPopper", "Gift", "Coffee", "Crown"],
+  hardware: ["Battery", "BatteryCharging", "Plug", "Power", "Radio", "RadioTower", "TowerControl", "Wifi", "Signal", "Satellite", "Tv", "Cpu", "Server", "Database", "Network", "HardDrive", "Laptop"]
 };
 
 const LOGO_SYMBOLS = Array.from(new Set(Object.values(SYMBOL_CATEGORIES).flat()));
@@ -93,7 +97,7 @@ export default function App() {
   
   // Builder State
   const [builderText, setBuilderText] = useState("GLIMPSE");
-  const [builderIcon, setBuilderIcon] = useState("NodeTree");
+  const [builderIcon, setBuilderIcon] = useState("Workflow");
   const [builderColor, setBuilderColor] = useState(COLORS[0]);
   const [customColor, setCustomColor] = useState(COLORS[0].hex);
   const [builderFont, setBuilderFont] = useState(FONTS[0]);
@@ -112,6 +116,8 @@ export default function App() {
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
+  const [sidebarWidth, setSidebarWidth] = useState(290);
+  const [isViewRawReadme, setIsViewRawReadme] = useState(false);
   
   // Isolator State
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -122,6 +128,15 @@ export default function App() {
   const builderRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleResize() {
+      setSidebarWidth(window.innerWidth < 480 ? 240 : 290);
+    }
+    handleResize();
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     function handleClickOutside(event: Event) {
@@ -394,7 +409,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
           <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all flex-shrink-0">
             <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
           </div>
-          <div className="flex gap-4 md:gap-8 relative border-l border-brand-border/10 pl-3 md:pl-8">
+          <div className="flex gap-2.5 sm:gap-4 md:gap-8 relative border-l border-brand-border/10 pl-2.5 md:pl-8">
             {[
               { id: "create", label: "LOGO" },
               { id: "isolate", label: "CLEAN" },
@@ -404,7 +419,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
               <button 
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id as any)}
-                className={`text-[9px] tracking-[0.2em] transition-all duration-500 relative py-1.5 uppercase font-semibold ${
+                className={`text-[9.5px] tracking-[0.08em] sm:tracking-[0.2em] transition-all duration-500 relative py-1.5 uppercase font-semibold ${
                   activeTab === tab.id 
                     ? "text-brand-text" 
                     : "text-brand-text/40 hover:text-brand-text/70"
@@ -443,7 +458,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 items-start">
           
-          <div className="lg:col-span-4 space-y-12 relative">
+          <div className="lg:col-span-4 space-y-12 relative order-2 lg:order-1">
             <AnimatePresence mode="wait">
               {activeTab === "guide" ? (
                 <motion.div 
@@ -712,7 +727,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                           animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                           exit={{ opacity: 0, scale: 0.98, y: 12 }}
                           transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                          className="fixed inset-x-0 bottom-0 max-h-[75vh] rounded-t-md bg-brand-bg border-t border-brand-border py-5 shadow-[0_-12px_40px_rgba(0,0,0,0.15)] z-40 lg:absolute lg:inset-auto lg:left-[105%] lg:top-0 lg:bottom-auto lg:w-[410px] lg:h-[580px] lg:rounded-sm lg:border lg:border-brand-border lg:shadow-[0_25px_60px_rgba(0,0,0,0.25)] flex flex-col gap-4 overflow-hidden"
+                          className="fixed inset-x-0 bottom-0 max-h-[75vh] rounded-t-md bg-brand-bg border-t border-brand-border px-5 py-5 shadow-[0_-12px_40px_rgba(0,0,0,0.15)] z-40 lg:absolute lg:inset-auto lg:left-[105%] lg:top-0 lg:bottom-auto lg:w-[410px] lg:h-[580px] lg:rounded-sm lg:border lg:border-brand-border lg:shadow-[0_25px_60px_rgba(0,0,0,0.25)] flex flex-col gap-4 overflow-hidden"
                         >
                           {/* Pane Header */}
                           <div className="flex items-center justify-between pb-3 border-b border-brand-border/10 shrink-0">
@@ -752,7 +767,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
 
                           {/* Industry Clusters & Shape Filters */}
                           <div className="flex flex-wrap gap-1.5 shrink-0 max-h-24 overflow-y-auto no-scrollbar">
-                            {["all", "mobile", "computer", "academic", "corporate", "shapes", "nature", "browser", "tools"].map((cat) => (
+                            {["all", ...Object.keys(SYMBOL_CATEGORIES)].map((cat) => (
                               <button 
                                 key={cat}
                                 onClick={() => setIconCategory(cat)}
@@ -770,7 +785,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                           {/* Interactive Grid containing all targeted symbols */}
                           <div className="flex-1 overflow-y-auto pr-1 border border-brand-border/10 rounded-sm p-3 bg-brand-subtle/30 scrollbar-thin scrollbar-thumb-brand-border">
                             {filteredSymbols.length > 0 ? (
-                              <div className="grid grid-cols-6 gap-2">
+                              <div className="grid grid-cols-5 sm:grid-cols-6 gap-2">
                                 {filteredSymbols.map(iconName => (
                                   <button 
                                     key={iconName}
@@ -859,7 +874,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                        />
                     </div>
                   </div>
-                  <div className="flex gap-4">
+                  <div className="flex gap-4 items-center">
                     {COLORS.map(c => (
                       <button 
                         key={c.name}
@@ -879,6 +894,42 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                         )}
                       </button>
                     ))}
+
+                    {/* Highly Interactive Rainbow Color Wheel Picker - Extra Clever & Minimalist */}
+                    <div 
+                      className={`relative w-4 h-4 rounded-full border cursor-pointer hover:scale-110 active:scale-95 transition-all duration-200 flex-shrink-0 flex items-center justify-center ${
+                        !COLORS.some(c => c.hex.toLowerCase() === customColor.toLowerCase()) 
+                          ? "scale-125 border-brand-text/30" 
+                          : "border-dashed border-brand-border/40 bg-transparent hover:border-brand-text/40"
+                      }`}
+                      style={{
+                        backgroundColor: !COLORS.some(c => c.hex.toLowerCase() === customColor.toLowerCase())
+                          ? customColor
+                          : "transparent"
+                      }}
+                      title="Custom Color"
+                    >
+                      <input 
+                        type="color"
+                        value={customColor.startsWith("#") && customColor.length === 7 ? customColor : "#fde68a"}
+                        onChange={(e) => setCustomColor(e.target.value)}
+                        className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                      />
+                      {COLORS.some(c => c.hex.toLowerCase() === customColor.toLowerCase()) ? (
+                        <svg className="w-1.5 h-1.5 text-brand-text/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                        </svg>
+                      ) : (
+                        <div className="w-1 h-1 rounded-full bg-brand-bg/85 mix-blend-difference" />
+                      )}
+                      {!COLORS.some(c => c.hex.toLowerCase() === customColor.toLowerCase()) && (
+                        <motion.div 
+                          layoutId="palette-ring"
+                          className="absolute -inset-1.5 border border-brand-text tracking-tighter opacity-35 rounded-full"
+                          transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                        />
+                      )}
+                    </div>
                   </div>
                 </section>
 
@@ -925,7 +976,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                         />
                       </div>
                     </div>
-                    <div className="flex gap-4">
+                    <div className="flex gap-4 items-center">
                       {CANVAS_COLORS.map(c => (
                         <button 
                           key={c.name}
@@ -945,6 +996,42 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                           )}
                         </button>
                       ))}
+
+                      {/* Custom Spectrum Canvas BG Color Picker - Extra Clever & Minimalist */}
+                      <div 
+                        className={`relative w-4 h-4 rounded-full border cursor-pointer hover:scale-110 active:scale-95 transition-all duration-200 flex-shrink-0 flex items-center justify-center ${
+                          !CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase()) 
+                            ? "scale-125 border-brand-text/30" 
+                            : "border-dashed border-brand-border/40 bg-transparent hover:border-brand-text/40"
+                        }`}
+                        style={{
+                          backgroundColor: !CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase())
+                            ? customBgColor
+                            : "transparent"
+                        }}
+                        title="Custom Canvas BG"
+                      >
+                        <input 
+                          type="color"
+                          value={customBgColor.startsWith("#") && customBgColor.length === 7 ? customBgColor : "#1c1917"}
+                          onChange={(e) => setCustomBgColor(e.target.value)}
+                          className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                        />
+                        {CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase()) ? (
+                          <svg className="w-1.5 h-1.5 text-brand-text/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                            <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                          </svg>
+                        ) : (
+                          <div className="w-1 h-1 rounded-full bg-brand-bg/85 mix-blend-difference" />
+                        )}
+                        {!CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase()) && (
+                          <motion.div 
+                            layoutId="canvas-ring"
+                            className="absolute -inset-1.5 border border-brand-text tracking-tighter opacity-35 rounded-full"
+                            transition={{ type: "spring", stiffness: 300, damping: 30 }}
+                          />
+                        )}
+                      </div>
                     </div>
                   </section>
                 )}
@@ -996,12 +1083,88 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     </div>
                   )}
                 </div>
+
+                {assetUrl && (
+                  <section className="space-y-4 pt-8 border-t border-brand-border/10 animate-in fade-in slide-in-from-top-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-bold tracking-widest text-brand-text/50 uppercase font-mono">Backdrop</span>
+                      <div className="flex gap-4">
+                        <button 
+                          onClick={() => setIsBgTransparent(true)}
+                          className={`text-[9.5px] font-mono tracking-wider transition-all uppercase ${
+                            isBgTransparent ? "text-brand-text font-bold" : "text-brand-text/40 hover:text-brand-text/75"
+                          }`}
+                        >
+                          Grid
+                        </button>
+                        <button 
+                          onClick={() => setIsBgTransparent(false)}
+                          className={`text-[9.5px] font-mono tracking-wider transition-all uppercase ${
+                            !isBgTransparent ? "text-brand-text font-bold" : "text-brand-text/40 hover:text-brand-text/75"
+                          }`}
+                        >
+                          Solid
+                        </button>
+                      </div>
+                    </div>
+
+                    {!isBgTransparent && (
+                      <div className="space-y-3 pt-2">
+                        <div className="flex gap-4 items-center">
+                          {CANVAS_COLORS.map(c => (
+                            <button 
+                              key={c.name}
+                              onClick={() => { setBuilderBgColor(c); setCustomBgColor(c.hex); }}
+                              className={`w-3.5 h-3.5 rounded-full border border-brand-border/10 ${c.bg} transition-all duration-300 relative ${
+                                customBgColor === c.hex 
+                                  ? "scale-110" 
+                                  : "opacity-45 hover:opacity-100"
+                              }`}
+                            >
+                              {customBgColor === c.hex && (
+                                <div className="absolute -inset-1 border border-brand-text opacity-40 rounded-full" />
+                              )}
+                            </button>
+                          ))}
+                          
+                          {/* Extra Clever & Minimalist Spectrum Picker for Backdrop */}
+                          <div 
+                            className={`relative w-3.5 h-3.5 rounded-full border cursor-pointer hover:scale-110 active:scale-95 transition-all duration-200 flex-shrink-0 flex items-center justify-center ${
+                              !CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase()) 
+                                ? "scale-110 border-brand-text/30 bg-transparent" 
+                                : "border-dashed border-brand-border/40 bg-transparent hover:border-brand-text/40"
+                            }`}
+                            style={{
+                              backgroundColor: !CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase())
+                                ? customBgColor
+                                : "transparent"
+                            }}
+                          >
+                            <input 
+                              type="color"
+                              value={customBgColor.startsWith("#") && customBgColor.length === 7 ? customBgColor : "#1c1917"}
+                              onChange={(e) => setCustomBgColor(e.target.value)}
+                              className="absolute inset-0 opacity-0 cursor-pointer w-full h-full"
+                            />
+                            {CANVAS_COLORS.some(c => c.hex.toLowerCase() === customBgColor.toLowerCase()) ? (
+                              <svg className="w-1 h-1 text-brand-text/40" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={4}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
+                              </svg>
+                            ) : (
+                              <div className="w-1 h-1 rounded-full bg-brand-bg/85 mix-blend-difference" />
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    )}
+                  </section>
+                )}
               </motion.div>
             )}
             </AnimatePresence>
           </div>
 
-          <div className="lg:col-span-8">
+          <div className="lg:col-span-8 order-1 lg:order-2">
             <div className="aspect-square md:aspect-[4/3] bg-brand-subtle rounded-sm overflow-hidden relative border border-brand-border flex items-center justify-center transition-colors duration-300">
               <AnimatePresence mode="wait">
                 {activeTab === "guide" ? (
@@ -1185,37 +1348,64 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     </div>
                   </motion.div>
                 ) : activeTab === "webpage" ? (
-                  <motion.div 
+                  <motion.div  
                     key="webpage"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className="w-full h-full flex flex-col items-start p-6 md:p-16 overflow-y-auto"
+                    className="w-full h-full flex flex-col items-start p-6 md:p-12 overflow-y-auto"
                   >
-                     <div className="w-full max-w-xl space-y-12 text-left font-sans">
-                       <header className="space-y-2">
+                     <div className="w-full max-w-xl space-y-8 text-left font-sans">
+                       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border/10">
                          <h1 className="text-xs font-bold tracking-[0.2em] text-brand-text uppercase">Glimpse Webpage Specifications</h1>
+                         <div className="flex gap-3">
+                           <button 
+                             onClick={() => setIsViewRawReadme(false)}
+                             className={`text-[9px] font-mono tracking-wider uppercase transition-all ${
+                               !isViewRawReadme ? "text-brand-text font-bold underlineUnderline underline-offset-4" : "text-brand-text/45 hover:text-brand-text/75"
+                             }`}
+                           >
+                             Specs View
+                           </button>
+                           <button 
+                             onClick={() => setIsViewRawReadme(true)}
+                             className={`text-[9px] font-mono tracking-wider uppercase transition-all ${
+                               isViewRawReadme ? "text-brand-text font-bold underlineUnderline underline-offset-4" : "text-brand-text/45 hover:text-brand-text/75"
+                             }`}
+                           >
+                             Raw README.md (Plain)
+                           </button>
+                         </div>
                        </header>
 
-                       <div className="space-y-8 text-xs leading-relaxed text-brand-text/70 font-light">
-                         <div className="space-y-4 pt-6 border-t border-brand-border/10">
-                           <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">1. Online & CDN Requirements</h2>
-                           <p>
-                             When deployed on Vercel, Glimpse is not natively offline-capable. It does not implement custom service worker static asset caching or local PWA offline manifests.
-                           </p>
-                           <p>
-                             The neural network weights and WebAssembly configurations utilized for background isolation are retrieved at runtime from public content distribution networks (such as unpkg.com). Thus, an active internet connection is mandatory to load and run background removal for the first time.
-                           </p>
+                       {isViewRawReadme ? (
+                         <div className="space-y-4">
+                           <span className="text-[9px] font-mono tracking-widest text-brand-text/40 uppercase block">Plaintext Repository Documentation</span>
+                           <pre className="font-mono text-[9.5px] leading-relaxed text-brand-text/75 whitespace-pre-wrap bg-brand-subtle/50 p-4 border border-brand-border/10 rounded-sm select-text selection:bg-brand-text/10">
+                             {readmeText || "No plain readme available."}
+                           </pre>
                          </div>
+                       ) : (
+                         <div className="space-y-8 text-xs leading-relaxed text-brand-text/70 font-light">
+                           <div className="space-y-4 pt-2">
+                             <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">1. Online & CDN Requirements</h2>
+                             <p>
+                               When deployed on Vercel, Glimpse is not natively offline-capable. It does not implement custom service worker static asset caching or local PWA offline manifests.
+                             </p>
+                             <p>
+                               The neural network weights and WebAssembly configurations utilized for background isolation are retrieved at runtime from public content distribution networks (such as unpkg.com). Thus, an active internet connection is mandatory to load and run background removal for the first time.
+                             </p>
+                           </div>
 
-                         <div className="space-y-4 pt-6 border-t border-brand-border/10">
-                           <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">2. Execution Architecture</h2>
-                           <p>
-                             No remote databases, logging telemetry, or third-party tracking scripts are included. All vector assets, SVG models, and graphics calculations are executed locally within browser viewport memory.
-                           </p>
+                           <div className="space-y-4 pt-6 border-t border-brand-border/10">
+                             <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">2. Execution Architecture</h2>
+                             <p>
+                               No remote databases, logging telemetry, or third-party tracking scripts are included. All vector assets, SVG models, and graphics calculations are executed locally within browser viewport memory.
+                             </p>
+                           </div>
                          </div>
-                       </div>
+                       )}
                      </div>
                   </motion.div>
                 ) : (
@@ -1225,8 +1415,8 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
                     transition={{ duration: 0.2, ease: "easeInOut" }}
-                    className="w-full h-full flex items-center justify-center p-6 md:p-24 relative" 
-                    style={{
+                    className="w-full h-full flex items-center justify-center p-6 md:p-24 relative transition-colors duration-300" 
+                    style={isBgTransparent ? {
                       backgroundImage: theme === "light" 
                         ? "linear-gradient(45deg, #F5F5F5 25%, transparent 25%), linear-gradient(-45deg, #F5F5F5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #F5F5F5 75%), linear-gradient(-45deg, transparent 75%, #F5F5F5 75%)"
                         : theme === "grey"
@@ -1234,6 +1424,8 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                         : "linear-gradient(45deg, #12100f 25%, transparent 25%), linear-gradient(-45deg, #12100f 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #12100f 75%), linear-gradient(-45deg, transparent 75%, #12100f 75%)",
                       backgroundSize: "16px 16px",
                       backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px"
+                    } : {
+                      backgroundColor: customBgColor
                     }}
                   >
                     {!assetUrl && !isProcessing ? (
@@ -1278,7 +1470,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
           }}
           className="fixed right-0 top-1/2 -translate-y-1/2 z-50 flex items-center bg-brand-bg/95 backdrop-blur-md border-y border-l border-brand-border/40 rounded-l-xl shadow-2xl overflow-hidden cursor-pointer"
           animate={{
-            width: isSidebarHovered ? 290 : 38,
+            width: isSidebarHovered ? sidebarWidth : 38,
             height: isSidebarHovered ? 160 : 110,
           }}
           transition={{ type: "spring", stiffness: 350, damping: 28 }}

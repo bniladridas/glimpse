@@ -2,31 +2,31 @@
 
 Glimpse is an application for creating logos and compositions of shapes, icons, and text.
 
-It provides a canvas where you can choose an icon, set text, and customize fonts, weights, colors, and sizes. The icon catalog is stored in a panel on the side that can be toggled open to let you search and filter symbols by categories like mobile, computer, academic, and corporate layouts.
+It provides a canvas where you can choose an icon, set text, and customize fonts, weights, colors, and sizes. The icon catalog is stored in a panel on the side that can be toggled open to let you search and filter symbols by categories like mobile, computer, academic, corporate, social, and hardware layouts.
 
 You can copy the underlying React or SVG source code of the active icon directly to your clipboard to use in other developments.
 
 For reference, the copied React code imports the selected icon component from `lucide-react` and renders it as an SVG icon. For example:
 
 ```jsx
-import { NodeTree } from 'lucide-react';
+import { Workflow } from 'lucide-react';
 
-<NodeTree size={24} strokeWidth={1.5} />
+<Workflow size={24} strokeWidth={1.5} />
 ```
 
 In this snippet:
-- `NodeTree` is a React component for a node/tree-style icon.
+- `Workflow` is a React component for a node/tree connection or workflow-style icon.
 - `size={24}` makes the icon 24px wide and tall.
 - `strokeWidth={1.5}` makes the SVG line thickness thinner than the default, which is usually 2.
 
-This yields a 24px NodeTree icon with a 1.5px outline stroke.
+This yields a 24px Workflow icon with a 1.5px outline stroke.
 
 For other programming environments, Glimpse provides raw SVG string exports.
 
 ### Rust SVG Representation
 
 ```rust
-pub const NODE_TREE_ICON: &str = r##"<svg viewBox="0 0 24 24" width="24" height="24" stroke="#fafaf9" fill="none" stroke-width="1.5">...</svg>"##;
+pub const WORKFLOW_ICON: &str = r##"<svg viewBox="0 0 24 24" width="24" height="24" stroke="#fafaf9" fill="none" stroke-width="1.5">...</svg>"##;
 ```
 
 In this snippet:
@@ -38,7 +38,7 @@ In this snippet:
 ### Kotlin (Jetpack Compose) SVG Representation
 
 ```kotlin
-const val NODE_TREE_SVG_ASSET = """
+const val WORKFLOW_SVG_ASSET = """
 <svg viewBox="0 0 24 24" width="24" height="24" stroke="#fafaf9" fill="none" stroke-width="1.5">...</svg>
 """.trimIndent()
 ```
@@ -51,7 +51,7 @@ In this snippet:
 ### Dart (Flutter) SVG Representation
 
 ```dart
-const String nodeTreeIconSvg = r'''<svg viewBox="0 0 24 24" width="24" height="24" stroke="#fafaf9" fill="none" stroke-width="1.5">...</svg>''';
+const String workflowIconSvg = r'''<svg viewBox="0 0 24 24" width="24" height="24" stroke="#fafaf9" fill="none" stroke-width="1.5">...</svg>''';
 ```
 
 In this snippet:
@@ -60,7 +60,7 @@ In this snippet:
 - The exported SVG can be rendered in Flutter using packages like `flutter_svg`:
   ```dart
   SvgPicture.string(
-    nodeTreeIconSvg,
+    workflowIconSvg,
     width: 24,
     height: 24,
   )
