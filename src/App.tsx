@@ -82,16 +82,26 @@ const NAV_TABS = [
   { id: "guide", label: "Help", Icon: Icons.CircleHelp },
 ] as const;
 
-function removeEmptyUrlHash() {
-  if (window.location.href.endsWith("#")) {
+function removeAuthUrlFragment() {
+  const hashParams = new URLSearchParams(window.location.hash.slice(1));
+  const hasAuthFragment = [
+    "access_token",
+    "refresh_token",
+    "provider_token",
+    "expires_at",
+    "expires_in",
+    "token_type",
+  ].some((key) => hashParams.has(key));
+
+  if (window.location.href.endsWith("#") || hasAuthFragment) {
     window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
   }
 }
 
-function scheduleEmptyUrlHashCleanup() {
-  removeEmptyUrlHash();
-  window.setTimeout(removeEmptyUrlHash, 0);
-  window.setTimeout(removeEmptyUrlHash, 250);
+function scheduleAuthUrlCleanup() {
+  removeAuthUrlFragment();
+  window.setTimeout(removeAuthUrlFragment, 0);
+  window.setTimeout(removeAuthUrlFragment, 250);
 }
 
 export default function App() {
@@ -110,9 +120,9 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
-    scheduleEmptyUrlHashCleanup();
-    window.addEventListener("hashchange", scheduleEmptyUrlHashCleanup);
-    return () => window.removeEventListener("hashchange", scheduleEmptyUrlHashCleanup);
+    scheduleAuthUrlCleanup();
+    window.addEventListener("hashchange", scheduleAuthUrlCleanup);
+    return () => window.removeEventListener("hashchange", scheduleAuthUrlCleanup);
   }, []);
 
   const toggleTheme = () => {
@@ -200,7 +210,7 @@ export default function App() {
       }
       setAuthSession(data.session);
       setIsAuthLoading(false);
-      scheduleEmptyUrlHashCleanup();
+      scheduleAuthUrlCleanup();
     });
 
     const {
@@ -209,7 +219,7 @@ export default function App() {
       setAuthSession(session);
       setIsAuthLoading(false);
       setAuthError(null);
-      scheduleEmptyUrlHashCleanup();
+      scheduleAuthUrlCleanup();
     });
 
     return () => {
