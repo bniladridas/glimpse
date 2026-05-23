@@ -6,7 +6,9 @@ The project undergoes regular maintenance to address core security vulnerabiliti
 
 ## Browser Security Architecture
 
-This application operates entirely in your client web browser. All custom settings, scale adjustments, custom styles, and raw vector export flows are kept client-side. No remote database connections or remote storage locations receive, process, or analyze your SVG definitions, exported string parameters, or design states.
+Logo settings, scale adjustments, custom styles, canvas state, and raw vector export flows are kept client-side in the browser. Glimpse does not send SVG definitions, exported string parameters, or design state to a custom application server.
+
+Google sign-in is handled through Supabase Auth. Supabase receives the authentication data required to create and maintain the user session, including provider identity details returned by Google. The browser client uses the public Supabase anon key and PKCE auth flow.
 
 ## Reporting a Vulnerability
 

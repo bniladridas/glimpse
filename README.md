@@ -66,7 +66,7 @@ In this snippet:
   )
   ```
 
-The application has three color modes: light, dark, and grey. You can toggle background transparency to export images with a clear background. The resulting graphics can be downloaded directly from the browser. Glimpse is built with React, Vite, and Tailwind CSS and runs entirely in the client browser with no external database requirements.
+The application has three color modes: light, dark, and grey. You can toggle background transparency to export images with a clear background. The resulting graphics can be downloaded directly from the browser. Glimpse is built with React, Vite, Tailwind CSS, and Supabase Auth.
 
 ## Supabase Google Authentication
 
@@ -110,11 +110,13 @@ https://<production-domain>
 
 This software is licensed under the Apache License, Version 2.0 (the "License"). You may not use this software except in compliance with the License. You can obtain a copy of the License at http://www.apache.org/licenses/LICENSE-2.0.
 
+Copyright 2026 Niladri Das.
+
 Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License for the specific language governing permissions and regulations.
 
 ## Security
 
-This application runs entirely in your local browser environment. All icon data, custom styles, scale levels, and custom layout states are handled client-side. No remote servers receive, process, or store your configuration options or exported SVG streams.
+Icon data, custom styles, scale levels, layout state, and exported SVG streams are handled client-side in the browser. Authentication is handled by Supabase Auth when Google sign-in is enabled. Glimpse does not send logo configuration options, generated exports, or canvas state to a custom application server.
 
 To report security vulnerabilities or concerns, please open a private security advisory or file a draft security report directly through the repository platform hosting this project. To maintain user safety, do not publish exploit methods or code publicly before a resolution is released.
 
