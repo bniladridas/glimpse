@@ -4,6 +4,7 @@
   --color-brand-bg: var(--brand-bg);
   --color-brand-text: var(--brand-text);
   --color-brand-border: var(--brand-border);
+  --color-brand-subtle: var(--brand-subtle);
   --animate-pulse-slow: pulse-slow 3s cubic-bezier(0.4, 0, 0.6, 1) infinite;
 
   @keyframes pulse-slow {

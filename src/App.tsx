@@ -471,10 +471,10 @@ export default function App() {
                   </div>
 
                   {/* High Quality Inline Focus Tile and Shortcuts */}
-                  <div className="grid grid-cols-12 gap-3 border border-brand-border/10 rounded-sm p-3 bg-stone-100/10 dark:bg-stone-900/10 items-center">
+                  <div className="grid grid-cols-12 gap-3 border border-brand-border/10 rounded-sm p-3 bg-brand-subtle/40 items-center">
                     {/* Active Icon Display */}
                     <div className="col-span-4 flex flex-col items-center justify-center border-r border-brand-border/10 pr-3 h-14">
-                      <div className="w-9 h-9 rounded-sm bg-stone-100/50 dark:bg-stone-900/50 border border-brand-border/5 flex items-center justify-center shadow-inner">
+                      <div className="w-9 h-9 rounded-sm bg-brand-subtle/80 border border-brand-border/5 flex items-center justify-center shadow-inner">
                         <DynamicIcon name={builderIcon} className="w-5 h-5 text-brand-text stroke-[1.5px]" />
                       </div>
                       <span className="text-[8px] font-semibold tracking-tight text-center max-w-full truncate text-stone-400 mt-1">{builderIcon}</span>
@@ -490,8 +490,8 @@ export default function App() {
                             onClick={() => setBuilderIcon(fav)}
                             className={`w-7 h-7 rounded-sm border transition-all flex items-center justify-center ${
                               builderIcon === fav
-                                ? "border-brand-text bg-stone-200/30 dark:bg-stone-800/30 scale-105"
-                                : "border-brand-border/10 hover:border-brand-border/25 hover:bg-stone-200/5 dark:hover:bg-stone-800/5"
+                                ? "border-brand-text bg-brand-text/10 scale-105"
+                                : "border-brand-border/10 hover:border-brand-border/25 hover:bg-brand-text/5"
                             }`}
                             title={`Quick select ${fav}`}
                           >
@@ -536,13 +536,13 @@ export default function App() {
                           animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
                           exit={{ opacity: 0, scale: 0.98, y: 12 }}
                           transition={{ type: "spring", stiffness: 420, damping: 32 }}
-                          className="fixed inset-x-0 bottom-0 max-h-[75vh] rounded-t-md bg-stone-50 dark:bg-stone-950 border-t border-brand-border/15 p-5 shadow-[0_-12px_40px_rgba(0,0,0,0.15)] z-40 lg:absolute lg:inset-auto lg:left-[105%] lg:top-0 lg:bottom-auto lg:w-[410px] lg:h-[580px] lg:rounded-sm lg:border lg:border-brand-border/15 lg:shadow-[0_25px_60px_rgba(0,0,0,0.25)] flex flex-col gap-4 overflow-hidden"
+                          className="fixed inset-x-0 bottom-0 max-h-[75vh] rounded-t-md bg-brand-bg border-t border-brand-border py-5 shadow-[0_-12px_40px_rgba(0,0,0,0.15)] z-40 lg:absolute lg:inset-auto lg:left-[105%] lg:top-0 lg:bottom-auto lg:w-[410px] lg:h-[580px] lg:rounded-sm lg:border lg:border-brand-border lg:shadow-[0_25px_60px_rgba(0,0,0,0.25)] flex flex-col gap-4 overflow-hidden"
                         >
                           {/* Pane Header */}
                           <div className="flex items-center justify-between pb-3 border-b border-brand-border/10 shrink-0">
                             <div className="flex items-center gap-2">
                               <span className="text-[10px] font-bold tracking-[0.2em] text-brand-text uppercase">Symbol Atelier</span>
-                              <span className="text-[9px] font-mono text-stone-400 bg-stone-200/30 dark:bg-stone-800/30 px-2 py-0.5 rounded-sm">
+                              <span className="text-[9px] font-mono text-stone-400 bg-brand-subtle/50 px-2 py-0.5 rounded-sm">
                                 {filteredSymbols.length} available
                               </span>
                             </div>
@@ -562,7 +562,7 @@ export default function App() {
                               placeholder="Search all icons..." 
                               value={iconSearch}
                               onChange={(e) => setIconSearch(e.target.value)}
-                              className="w-full bg-stone-200/20 dark:bg-stone-900/20 border border-brand-border/10 rounded-sm pl-8 pr-7 py-1.5 outline-none text-[10px] tracking-wide focus:border-brand-text transition-colors placeholder:text-stone-400 dark:placeholder:text-stone-600"
+                              className="w-full bg-brand-subtle/30 border border-brand-border/10 rounded-sm pl-8 pr-7 py-1.5 outline-none text-[10px] tracking-wide focus:border-brand-text transition-colors placeholder:text-stone-400 dark:placeholder:text-stone-600"
                             />
                             {iconSearch && (
                               <button 
@@ -580,12 +580,10 @@ export default function App() {
                               <button 
                                 key={cat}
                                 onClick={() => setIconCategory(cat)}
-                                className={`text-[9px] font-bold tracking-wider px-2.5 py-0.5 rounded-full border transition-all duration-300 uppercase whitespace-nowrap ${
+                                className={`text-[9.5px] font-bold tracking-wider px-2.5 py-0.5 rounded-full border transition-all duration-300 uppercase whitespace-nowrap ${
                                   iconCategory === cat 
-                                    ? "bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-100 dark:border-stone-100 dark:text-stone-950" 
-                                    : theme === "grey"
-                                      ? "border-stone-800/20 text-stone-500 hover:text-stone-300 hover:border-stone-700/30"
-                                      : "border-brand-border/5 text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 hover:border-brand-border/25"
+                                    ? "bg-brand-text border-brand-text text-brand-bg" 
+                                    : "border-brand-border/10 text-stone-400 hover:text-brand-text hover:border-brand-border/40"
                                 }`}
                               >
                                 {cat}
@@ -594,7 +592,7 @@ export default function App() {
                           </div>
 
                           {/* Interactive Grid containing all targeted symbols */}
-                          <div className="flex-1 overflow-y-auto pr-1 border border-brand-border/10 rounded-sm p-3 bg-stone-100/10 dark:bg-stone-900/10 scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-800">
+                          <div className="flex-1 overflow-y-auto pr-1 border border-brand-border/10 rounded-sm p-3 bg-brand-subtle/30 scrollbar-thin scrollbar-thumb-brand-border">
                             {filteredSymbols.length > 0 ? (
                               <div className="grid grid-cols-6 gap-2">
                                 {filteredSymbols.map(iconName => (
@@ -603,8 +601,8 @@ export default function App() {
                                     onClick={() => setBuilderIcon(iconName)}
                                     className={`aspect-square flex items-center justify-center rounded-sm border transition-all duration-200 ${
                                       builderIcon === iconName 
-                                        ? "bg-stone-200/40 dark:bg-stone-800/40 border-stone-300 dark:border-stone-700" 
-                                        : "border-transparent hover:bg-stone-200/10 dark:hover:bg-stone-800/10"
+                                        ? "bg-brand-text/10 border-brand-text/20" 
+                                        : "border-transparent hover:bg-brand-text/5"
                                     }`}
                                     title={iconName}
                                   >
@@ -613,9 +611,7 @@ export default function App() {
                                       className={`w-5 h-5 stroke-[1.5px] transition-all duration-300 ${
                                         builderIcon === iconName 
                                           ? "text-brand-text scale-110" 
-                                          : theme === "grey"
-                                            ? "text-stone-500 hover:text-stone-300"
-                                            : "text-stone-300 dark:text-stone-700 hover:text-stone-500"
+                                          : "text-brand-text/30 hover:text-brand-text"
                                       }`} 
                                     />
                                   </button>
