@@ -55,6 +55,7 @@ const CANVAS_COLORS = [
 ];
 
 const CHANGELOG = [
+  { version: "v1.22", date: "Today", features: ["Integrated React and Raw SVG code exporters for every catalog symbol to support instantaneous design-to-development code reuse"] },
   { version: "v1.21", date: "Today", features: ["Introduced a floating 'Symbol Atelier' popout drawer that anchors alongside the controls panel, completely preventing vertical layout clutter", "Created a high-contrast inline preview section with responsive focus tiles and immediate category shortcuts", "Perfected responsive overlays with fluid spring gestures on mobile screens"] },
   { version: "v1.20", date: "Today", features: ["Replaced horizontal category scrolling with flexwrap containers to eradicate browser scrollbar overlays and restore instantaneous icon selection"] },
   { version: "v1.19", date: "Today", features: ["Integrated dynamic panel expansion for the icon catalog, featuring both compact minimal and ultra-wide grid modes"] },
@@ -118,6 +119,7 @@ export default function App() {
   const [customBgColor, setCustomBgColor] = useState(CANVAS_COLORS[0].hex);
   const [iconScale, setIconScale] = useState(1.0);
   const [strokeWidth, setStrokeWidth] = useState(1.5);
+  const [copiedType, setCopiedType] = useState<string | null>(null);
   
   // Isolator State
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -246,6 +248,32 @@ export default function App() {
       URL.revokeObjectURL(url);
     };
     img.src = url;
+  };
+
+  const copyIconCode = (type: "react" | "svg") => {
+    if (type === "react") {
+      const componentName = builderIcon === "NodeTree" ? "NodeTree" : builderIcon;
+      const snippet = `import { ${componentName} } from 'lucide-react';\n\n// Usage\n<${componentName} size={24} strokeWidth={${strokeWidth}} />`;
+      navigator.clipboard.writeText(snippet);
+      setCopiedType("react");
+      setTimeout(() => setCopiedType(null), 2000);
+    } else {
+      const rawSvg = document.querySelector("#preview-symbol svg");
+      if (rawSvg) {
+        const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
+        svgClone.removeAttribute("class");
+        svgClone.removeAttribute("style");
+        svgClone.setAttribute("width", "24");
+        svgClone.setAttribute("height", "24");
+        svgClone.setAttribute("stroke-width", strokeWidth.toString());
+        svgClone.setAttribute("stroke", customColor);
+        let svgData = new XMLSerializer().serializeToString(svgClone);
+        svgData = svgData.replace(/currentColor/g, customColor);
+        navigator.clipboard.writeText(svgData);
+        setCopiedType("svg");
+        setTimeout(() => setCopiedType(null), 2000);
+      }
+    }
   };
 
   const DynamicIcon = ({ name, className, style, strokeWidth, width, height }: { name: string, className?: string, style?: React.CSSProperties, strokeWidth?: number, width?: number, height?: number }) => {
@@ -472,6 +500,40 @@ export default function App() {
                         ))}
                       </div>
                     </div>
+                  </div>
+
+                  {/* Dev Code Copiers */}
+                  <div className="grid grid-cols-2 gap-2 text-center">
+                    <button
+                      onClick={() => copyIconCode("react")}
+                      className="py-1.5 px-3 rounded-sm border border-brand-border/10 bg-stone-100/20 dark:bg-stone-900/20 text-[9px] font-mono tracking-wider font-semibold hover:border-brand-text/30 hover:text-brand-text transition-all duration-300 flex items-center justify-center gap-1.5"
+                    >
+                      {copiedType === "react" ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                          <span>COPIED REACT</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>COPY REACT CODE</span>
+                        </>
+                      )}
+                    </button>
+                    <button
+                      onClick={() => copyIconCode("svg")}
+                      className="py-1.5 px-3 rounded-sm border border-brand-border/10 bg-stone-100/20 dark:bg-stone-900/20 text-[9px] font-mono tracking-wider font-semibold hover:border-brand-text/30 hover:text-brand-text transition-all duration-300 flex items-center justify-center gap-1.5"
+                    >
+                      {copiedType === "svg" ? (
+                        <>
+                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
+                          <span>COPIED SVG</span>
+                        </>
+                      ) : (
+                        <>
+                          <span>COPY RAW SVG</span>
+                        </>
+                      )}
+                    </button>
                   </div>
 
                   {/* Floating Symbol Atelier Popout */}
