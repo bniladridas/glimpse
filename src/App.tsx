@@ -309,7 +309,7 @@ export default function App() {
   return (
     <div className="min-h-screen bg-brand-bg font-sans text-brand-text selection:bg-stone-100 transition-colors duration-300 flex flex-col">
       {/* Premium edge-to-edge top header */}
-      <header className="w-full border-b border-brand-border/10 py-4 px-6 md:px-12 flex items-center justify-between bg-brand-bg transition-all">
+      <header className="w-full border-b border-brand-border/10 py-4 px-6 md:px-12 flex items-center justify-between bg-transparent transition-colors duration-300">
         <div className="flex items-center gap-8 relative">
           <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all">
             <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
