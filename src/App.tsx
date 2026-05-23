@@ -503,36 +503,20 @@ export default function App() {
                   </div>
 
                   {/* Dev Code Copiers */}
-                  <div className="grid grid-cols-2 gap-2 text-center">
+                  <div className="flex items-center justify-end gap-2.5 text-[8px] sm:text-[9px] text-stone-400 dark:text-stone-500 font-mono select-none">
+                    <span className="text-[8px] text-stone-300 dark:text-stone-800 uppercase tracking-wider">Use in code:</span>
                     <button
                       onClick={() => copyIconCode("react")}
-                      className="py-1.5 px-3 rounded-sm border border-brand-border/10 bg-stone-100/20 dark:bg-stone-900/20 text-[9px] font-mono tracking-wider font-semibold hover:border-brand-text/30 hover:text-brand-text transition-all duration-300 flex items-center justify-center gap-1.5"
+                      className="hover:text-brand-text cursor-pointer transition-colors duration-150 underline decoration-stone-200 dark:decoration-stone-800 underline-offset-2"
                     >
-                      {copiedType === "react" ? (
-                        <>
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                          <span>COPIED REACT</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>COPY REACT CODE</span>
-                        </>
-                      )}
+                      {copiedType === "react" ? "React (Copied)" : "React"}
                     </button>
+                    <span className="text-stone-300 dark:text-stone-800">•</span>
                     <button
                       onClick={() => copyIconCode("svg")}
-                      className="py-1.5 px-3 rounded-sm border border-brand-border/10 bg-stone-100/20 dark:bg-stone-900/20 text-[9px] font-mono tracking-wider font-semibold hover:border-brand-text/30 hover:text-brand-text transition-all duration-300 flex items-center justify-center gap-1.5"
+                      className="hover:text-brand-text cursor-pointer transition-colors duration-150 underline decoration-stone-200 dark:decoration-stone-800 underline-offset-2"
                     >
-                      {copiedType === "svg" ? (
-                        <>
-                          <CheckCircle2 className="w-3 h-3 text-emerald-500" />
-                          <span>COPIED SVG</span>
-                        </>
-                      ) : (
-                        <>
-                          <span>COPY RAW SVG</span>
-                        </>
-                      )}
+                      {copiedType === "svg" ? "SVG (Copied)" : "SVG"}
                     </button>
                   </div>
 
