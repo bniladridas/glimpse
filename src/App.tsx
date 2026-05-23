@@ -69,7 +69,7 @@ const CHANGELOG = [
 const COMPANY_LOGO_URL = "https://github.com/emberlamp.png";
 
 export default function App() {
-  const [activeTab, setActiveTab] = useState<"create" | "isolate" | "guide">("create");
+  const [activeTab, setActiveTab] = useState<"create" | "isolate" | "guide" | "webpage">("create");
   const [theme, setTheme] = useState<"light" | "dark" | "grey">("light");
   
   // Theme management
@@ -111,6 +111,7 @@ export default function App() {
   const [showGuides, setShowGuides] = useState(true);
   const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
+  const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   
   // Isolator State
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -382,6 +383,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
             {[
               { id: "create", label: "LOGO" },
               { id: "isolate", label: "CLEAN" },
+              { id: "webpage", label: "WEBPAGE" },
               { id: "guide", label: "HELP" }
             ].map((tab) => (
               <button 
@@ -427,31 +429,49 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 items-start">
           
           <div className="lg:col-span-4 space-y-12 relative">
-            {activeTab === "guide" ? (
-              <motion.div 
-                initial={{ opacity: 0, x: -10 }}
-                animate={{ opacity: 1, x: 0 }}
-                className="space-y-12"
-              >
+            <AnimatePresence mode="wait">
+              {activeTab === "guide" ? (
+                <motion.div 
+                  key="guide"
+                  initial={{ opacity: 0, x: -8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: -8 }}
+                  transition={{ duration: 0.2, ease: "easeInOut" }}
+                  className="space-y-12"
+                >
                 <section className="space-y-4">
-                  <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Logo Making</span>
-                  <p className="text-sm text-stone-500 font-light leading-relaxed">
+                  <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Logo Making</span>
+                  <p className="text-sm text-brand-text/60 font-light leading-relaxed">
                     Quickly create a logo. Use symbols and text to build your identity. Turn on 'Alpha' for a clear background.
                   </p>
                 </section>
+                
                 <section className="space-y-4 pt-8 border-t border-brand-border/10">
-                   <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Updates</span>
+                  <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Official Index</span>
+                  <p className="text-xs text-brand-text/60 font-light leading-relaxed">
+                    Read the objective overview describing this software's specifications in simple, non-cosmetic statements.
+                  </p>
+                  <button 
+                    onClick={() => setActiveTab("webpage")}
+                    className="text-[10px] font-bold tracking-[0.2em] text-brand-text hover:opacity-75 transition-opacity uppercase flex items-center gap-1.5"
+                  >
+                    Open Webpage [→]
+                  </button>
+                </section>
+
+                <section className="space-y-4 pt-8 border-t border-brand-border/10">
+                   <span className="text-[10px] font-semibold tracking-widest text-brand-text/50 uppercase">Updates</span>
                    <div className="space-y-6 pt-2">
                      {CHANGELOG.slice(0, 3).map((item) => (
                        <div key={item.version} className="space-y-2 border-b border-brand-border/5 pb-4 last:border-0 last:pb-0">
                          <div className="flex items-center justify-between">
                             <span className="text-[10px] font-semibold text-brand-text opacity-50 uppercase">{item.version}</span>
-                            <span className="text-[9px] font-medium text-stone-400 dark:text-stone-500 lowercase">{item.date}</span>
+                            <span className="text-[9px] font-medium text-brand-text/40 lowercase">{item.date}</span>
                          </div>
                          <ul className="space-y-1 list-none pl-0">
                            {item.features.map((feature, idx) => (
-                             <li key={idx} className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed flex items-start gap-2">
-                               <span className="text-stone-300 dark:text-stone-700 select-none mt-1.5 font-bold text-[6px]">■</span>
+                             <li key={idx} className="text-[11px] text-brand-text/60 leading-relaxed flex items-start gap-2">
+                               <span className="text-brand-text/30 select-none mt-1.5 font-bold text-[6px]">■</span>
                                <span>{feature}</span>
                              </li>
                            ))}
@@ -461,8 +481,31 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                    </div>
                 </section>
               </motion.div>
+            ) : activeTab === "webpage" ? (
+              <motion.div 
+                key="webpage"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="space-y-6"
+              >
+                <div className="space-y-4">
+                  <span className="text-[10px] font-semibold tracking-widest text-brand-text/40 uppercase">Glimpse Webpage</span>
+                  <p className="text-sm text-brand-text/60 font-light leading-relaxed">
+                    This directory describes Glimpse's execution model and technical facts. We prioritize objective truth over cosmetic or verbose statements.
+                  </p>
+                </div>
+              </motion.div>
             ) : activeTab === "create" ? (
-              <div className="space-y-10">
+              <motion.div 
+                key="create"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="space-y-10"
+              >
                 <section className="space-y-4">
                   <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500">Text Style</span>
                   <input 
@@ -900,9 +943,16 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     <Download className="w-3 h-3 group-hover:translate-y-0.5 transition-transform opacity-40" />
                   </button>
                 </div>
-              </div>
+              </motion.div>
             ) : (
-              <div className="space-y-12">
+              <motion.div 
+                key="isolate"
+                initial={{ opacity: 0, x: -8 }}
+                animate={{ opacity: 1, x: 0 }}
+                exit={{ opacity: 0, x: -8 }}
+                transition={{ duration: 0.2, ease: "easeInOut" }}
+                className="space-y-12"
+              >
                 <p className="text-xs text-brand-text/50 font-medium leading-relaxed max-w-sm">
                   Remove backgrounds from your images instantly.
                 </p>
@@ -931,8 +981,9 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     </div>
                   )}
                 </div>
-              </div>
+              </motion.div>
             )}
+            </AnimatePresence>
           </div>
 
           <div className="lg:col-span-8">
@@ -944,6 +995,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
                     className="w-full h-full flex flex-col items-center justify-center p-12 text-center"
                   >
                     <div className="relative w-32 h-32 flex items-center justify-center mb-6">
@@ -975,6 +1027,8 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     key="builder"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
                     onMouseMove={(e) => {
                       const rect = e.currentTarget.getBoundingClientRect();
                       const x = Math.round(e.clientX - rect.left);
@@ -1115,18 +1169,54 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                       )}
                     </div>
                   </motion.div>
+                ) : activeTab === "webpage" ? (
+                  <motion.div 
+                    key="webpage"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
+                    className="w-full h-full flex flex-col items-start p-6 md:p-16 overflow-y-auto"
+                  >
+                     <div className="w-full max-w-xl space-y-12 text-left font-sans">
+                       <header className="space-y-2">
+                         <h1 className="text-xs font-bold tracking-[0.2em] text-brand-text uppercase">Glimpse Webpage Specifications</h1>
+                       </header>
+
+                       <div className="space-y-8 text-xs leading-relaxed text-brand-text/70 font-light">
+                         <div className="space-y-4 pt-6 border-t border-brand-border/10">
+                           <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">1. Online & CDN Requirements</h2>
+                           <p>
+                             When deployed on Vercel, Glimpse is not natively offline-capable. It does not implement custom service worker static asset caching or local PWA offline manifests.
+                           </p>
+                           <p>
+                             The neural network weights and WebAssembly configurations utilized for background isolation are retrieved at runtime from public content distribution networks (such as unpkg.com). Thus, an active internet connection is mandatory to load and run background removal for the first time.
+                           </p>
+                         </div>
+
+                         <div className="space-y-4 pt-6 border-t border-brand-border/10">
+                           <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">2. Execution Architecture</h2>
+                           <p>
+                             No remote databases, logging telemetry, or third-party tracking scripts are included. All vector assets, SVG models, and graphics calculations are executed locally within browser viewport memory.
+                           </p>
+                         </div>
+                       </div>
+                     </div>
+                  </motion.div>
                 ) : (
                   <motion.div 
                     key="isolator"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2, ease: "easeInOut" }}
                     className="w-full h-full flex items-center justify-center p-6 md:p-24 relative" 
                     style={{
                       backgroundImage: theme === "light" 
                         ? "linear-gradient(45deg, #F5F5F5 25%, transparent 25%), linear-gradient(-45deg, #F5F5F5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #F5F5F5 75%), linear-gradient(-45deg, transparent 75%, #F5F5F5 75%)"
                         : theme === "grey"
-                        ? "linear-gradient(45deg, #4a4a4a 25%, transparent 25%), linear-gradient(-45deg, #4a4a4a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #4a4a4a 75%), linear-gradient(-45deg, transparent 75%, #4a4a4a 75%)"
-                        : "linear-gradient(45deg, #1c1917 25%, transparent 25%), linear-gradient(-45deg, #1c1917 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1c1917 75%), linear-gradient(-45deg, transparent 75%, #1c1917 75%)",
+                        ? "linear-gradient(45deg, #444444 25%, transparent 25%), linear-gradient(-45deg, #444444 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #444444 75%), linear-gradient(-45deg, transparent 75%, #444444 75%)"
+                        : "linear-gradient(45deg, #12100f 25%, transparent 25%), linear-gradient(-45deg, #12100f 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #12100f 75%), linear-gradient(-45deg, transparent 75%, #12100f 75%)",
                       backgroundSize: "16px 16px",
                       backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px"
                     }}
@@ -1155,11 +1245,67 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
           </div>
         </div>
 
-        <footer className="mt-24 md:mt-40 pt-12 border-t border-brand-border">
-          <p className="text-[9px] font-bold tracking-[0.6em] text-brand-text/30">
+        <footer className="mt-24 md:mt-40 pt-12 border-t border-brand-border flex items-center justify-between gap-4">
+          <p className="text-[9px] font-bold tracking-[0.6em] text-brand-text/30 uppercase">
              &copy; {new Date().getFullYear()} GLIMPSE
           </p>
         </footer>
+
+        {/* Quiet, extra clever hover-reveal sidebar for emberlamp */}
+        <motion.div
+          onMouseEnter={() => setIsSidebarHovered(true)}
+          onMouseLeave={() => setIsSidebarHovered(false)}
+          className="fixed right-0 top-1/2 -translate-y-1/2 z-50 hidden md:flex items-center bg-brand-bg/95 backdrop-blur-md border-y border-l border-brand-border/40 rounded-l-xl shadow-2xl overflow-hidden"
+          animate={{
+            width: isSidebarHovered ? 290 : 38,
+            height: isSidebarHovered ? 160 : 110,
+          }}
+          transition={{ type: "spring", stiffness: 350, damping: 28 }}
+        >
+          <div className="flex h-full w-full items-center">
+            {/* Persistent dock tab indicator */}
+            <div className="w-[38px] flex flex-col items-center justify-between py-5 h-full border-r border-brand-border/10 cursor-pointer text-brand-text/35 hover:text-[#ea580c] transition-colors">
+              <Icons.Flame className="w-3.5 h-3.5 text-orange-500 animate-pulse" />
+              <div className="text-[7.5px] tracking-[0.25em] font-mono [writing-mode:vertical-lr] select-none text-brand-text/30 uppercase font-medium">
+                emberlamp
+              </div>
+              <Icons.ChevronRight className={`w-3 h-3 transition-transform duration-300 ${isSidebarHovered ? 'rotate-180 text-brand-text/60' : ''}`} />
+            </div>
+
+            {/* Extended drawer sponsorship details */}
+            <AnimatePresence>
+              {isSidebarHovered && (
+                <motion.div 
+                  initial={{ opacity: 0, x: 8 }}
+                  animate={{ opacity: 1, x: 0 }}
+                  exit={{ opacity: 0, x: 8 }}
+                  transition={{ duration: 0.18, ease: "easeOut" }}
+                  className="flex-1 p-4 flex flex-col justify-between h-full select-none"
+                >
+                  <div className="space-y-1.5">
+                    <div className="flex items-center gap-1.5">
+                      <span className="text-[9px] font-mono tracking-widest text-orange-500 uppercase font-semibold">Community Hub</span>
+                      <span className="w-1 h-1 rounded-full bg-emerald-500 animate-ping" />
+                    </div>
+                    <h4 className="text-xs font-bold tracking-wider text-brand-text">emberlamp</h4>
+                    <p className="text-[11px] text-brand-text/50 font-light leading-relaxed">
+                      Sponsoring ultra-clean, minimalist digital utilities and design ecosystems with complete structural focus.
+                    </p>
+                  </div>
+                  <a 
+                    href="https://github.com/emberlamp"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="inline-flex items-center gap-1.5 text-[10px] font-mono text-brand-text/40 hover:text-brand-text/80 transition-colors border-t border-brand-border/15 pt-2 mt-2 group"
+                  >
+                    <span>visit github community</span>
+                    <Icons.ExternalLink className="w-3 h-3 opacity-50 group-hover:opacity-100 group-hover:translate-x-0.5 transition-all" />
+                  </a>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
+        </motion.div>
       </main>
     </div>
   );
