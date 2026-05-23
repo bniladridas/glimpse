@@ -3,6 +3,9 @@ import { Download, Image as ImageIcon, Upload, CheckCircle2, ChevronRight, X, Lo
 import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { removeBackground } from "@imgly/background-removal";
+import { type Session } from "@supabase/supabase-js";
+import { AuthPanel } from "./AuthPanel";
+import { isSupabaseConfigured, supabase } from "./lib/supabase";
 // @ts-ignore
 import readmeText from "../README.md?raw";
 
@@ -72,6 +75,25 @@ const CHANGELOG = [
 
 const COMPANY_LOGO_URL = "https://github.com/emberlamp.png";
 
+const NAV_TABS = [
+  { id: "create", label: "Logo", Icon: Icons.Shapes },
+  { id: "isolate", label: "Clean", Icon: Icons.Eraser },
+  { id: "webpage", label: "Webpage", Icon: Icons.FileText },
+  { id: "guide", label: "Help", Icon: Icons.CircleHelp },
+] as const;
+
+function removeEmptyUrlHash() {
+  if (window.location.href.endsWith("#")) {
+    window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  }
+}
+
+function scheduleEmptyUrlHashCleanup() {
+  removeEmptyUrlHash();
+  window.setTimeout(removeEmptyUrlHash, 0);
+  window.setTimeout(removeEmptyUrlHash, 250);
+}
+
 export default function App() {
   const [activeTab, setActiveTab] = useState<"create" | "isolate" | "guide" | "webpage">("create");
   const [theme, setTheme] = useState<"light" | "dark" | "grey">("light");
@@ -87,6 +109,12 @@ export default function App() {
     document.documentElement.classList.add(theme);
   }, [theme]);
 
+  useEffect(() => {
+    scheduleEmptyUrlHashCleanup();
+    window.addEventListener("hashchange", scheduleEmptyUrlHashCleanup);
+    return () => window.removeEventListener("hashchange", scheduleEmptyUrlHashCleanup);
+  }, []);
+
   const toggleTheme = () => {
     setTheme(prev => {
       if (prev === "light") return "dark";
@@ -94,6 +122,8 @@ export default function App() {
       return "light";
     });
   };
+
+  const nextThemeLabel = theme === "light" ? "Dark theme" : theme === "dark" ? "Grey theme" : "Light theme";
   
   // Builder State
   const [builderText, setBuilderText] = useState("GLIMPSE");
@@ -118,6 +148,9 @@ export default function App() {
   const [isSidebarHovered, setIsSidebarHovered] = useState(false);
   const [sidebarWidth, setSidebarWidth] = useState(290);
   const [isViewRawReadme, setIsViewRawReadme] = useState(false);
+  const [authSession, setAuthSession] = useState<Session | null>(null);
+  const [isAuthLoading, setIsAuthLoading] = useState(true);
+  const [authError, setAuthError] = useState<string | null>(null);
   
   // Isolator State
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -151,6 +184,67 @@ export default function App() {
       document.removeEventListener("touchstart", handleClickOutside);
     };
   }, []);
+
+  useEffect(() => {
+    if (!supabase) {
+      setIsAuthLoading(false);
+      return;
+    }
+
+    let isMounted = true;
+
+    supabase.auth.getSession().then(({ data, error }) => {
+      if (!isMounted) return;
+      if (error) {
+        setAuthError(error.message);
+      }
+      setAuthSession(data.session);
+      setIsAuthLoading(false);
+      scheduleEmptyUrlHashCleanup();
+    });
+
+    const {
+      data: { subscription },
+    } = supabase.auth.onAuthStateChange((_event, session) => {
+      setAuthSession(session);
+      setIsAuthLoading(false);
+      setAuthError(null);
+      scheduleEmptyUrlHashCleanup();
+    });
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []);
+
+  const signInWithGoogle = async () => {
+    if (!supabase) return;
+    setIsAuthLoading(true);
+    setAuthError(null);
+
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: {
+        redirectTo: `${window.location.origin}/`,
+      },
+    });
+
+    if (error) {
+      setAuthError(error.message);
+      setIsAuthLoading(false);
+    }
+  };
+
+  const signOut = async () => {
+    if (!supabase) return;
+    setIsAuthLoading(true);
+    const { error } = await supabase.auth.signOut();
+    if (error) {
+      setAuthError(error.message);
+    }
+    setIsAuthLoading(false);
+  };
 
   const filteredSymbols = LOGO_SYMBOLS.filter(symbol => {
     const matchesCategory = iconCategory === "all" || SYMBOL_CATEGORIES[iconCategory]?.includes(symbol);
@@ -409,51 +503,102 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
           <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all flex-shrink-0">
             <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
           </div>
-          <div className="flex gap-2.5 sm:gap-4 md:gap-8 relative border-l border-brand-border/10 pl-2.5 md:pl-8">
-            {[
-              { id: "create", label: "LOGO" },
-              { id: "isolate", label: "CLEAN" },
-              { id: "webpage", label: "WEBPAGE" },
-              { id: "guide", label: "HELP" }
-            ].map((tab) => (
-              <button 
-                key={tab.id}
-                onClick={() => setActiveTab(tab.id as any)}
-                className={`text-[9.5px] tracking-[0.08em] sm:tracking-[0.2em] transition-all duration-500 relative py-1.5 uppercase font-semibold ${
-                  activeTab === tab.id 
-                    ? "text-brand-text" 
-                    : "text-brand-text/40 hover:text-brand-text/70"
-                }`}
-              >
-                {tab.label}
-                {activeTab === tab.id && (
-                  <motion.div 
-                    layoutId="active-tab-line"
-                    className="absolute -bottom-1.5 left-0 right-0 h-px bg-brand-text/30"
-                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                  />
-                )}
-              </button>
+          <div className="flex gap-1.5 sm:gap-2.5 relative border-l border-brand-border/10 pl-2.5 md:pl-8">
+            {NAV_TABS.map((tab) => (
+              <div key={tab.id} className="group relative">
+                <button 
+                  type="button"
+                  onClick={() => setActiveTab(tab.id)}
+                  aria-label={tab.label}
+                  className={`relative flex h-8 w-8 items-center justify-center rounded-full border transition-all duration-300 focus:outline-none focus:ring-1 focus:ring-brand-text/20 ${
+                    activeTab === tab.id 
+                      ? "border-brand-text/25 bg-brand-text/[0.04] text-brand-text" 
+                      : "border-transparent text-brand-text/40 hover:border-brand-border/40 hover:text-brand-text/75"
+                  }`}
+                >
+                  <tab.Icon className="h-3.5 w-3.5" />
+                  {activeTab === tab.id && (
+                    <motion.div 
+                      layoutId="active-tab-line"
+                      className="absolute -bottom-1 left-1/2 h-px w-3 -translate-x-1/2 bg-brand-text/40"
+                      transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                    />
+                  )}
+                </button>
+                <div className="pointer-events-none absolute left-1/2 top-full z-50 mt-2 -translate-x-1/2 whitespace-nowrap rounded-sm border border-brand-border bg-brand-bg px-2.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-brand-text/60 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                  {tab.label}
+                </div>
+              </div>
             ))}
           </div>
         </div>
         
-        <button 
-          onClick={toggleTheme}
-          className="p-1.5 transition-colors flex items-center gap-2 group text-brand-text/40 hover:text-brand-text"
-        >
-          {theme === "light" ? (
-            <Moon className="w-4 h-4" />
-          ) : theme === "dark" ? (
-            <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">
-              <div className="w-2 h-2 bg-current rounded-full" />
+        <div className="flex items-center gap-4">
+          {authSession && (
+            <div className="flex items-center gap-3">
+              <div className="group relative">
+                <button
+                  type="button"
+                  aria-label={authSession.user.email ? `Signed in as ${authSession.user.email}` : "Signed in user"}
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-brand-border/40 text-brand-text/45 transition-colors hover:border-brand-text/35 hover:text-brand-text focus:outline-none focus:ring-1 focus:ring-brand-text/20"
+                >
+                  <Icons.UserRound className="h-3.5 w-3.5" />
+                </button>
+                {authSession.user.email && (
+                  <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 max-w-[240px] rounded-sm border border-brand-border bg-brand-bg px-3 py-2 text-[9px] font-mono tracking-wider text-brand-text/60 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                    {authSession.user.email}
+                  </div>
+                )}
+              </div>
+              <div className="group relative">
+                <button
+                  type="button"
+                  onClick={signOut}
+                  disabled={isAuthLoading}
+                  aria-label="Sign out"
+                  className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-brand-text/40 transition-colors hover:border-brand-border/40 hover:text-brand-text/75 focus:outline-none focus:ring-1 focus:ring-brand-text/20 disabled:cursor-not-allowed disabled:opacity-30"
+                >
+                  <Icons.LogOut className="h-3.5 w-3.5" />
+                </button>
+                <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 whitespace-nowrap rounded-sm border border-brand-border bg-brand-bg px-2.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-brand-text/60 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+                  Sign out
+                </div>
+              </div>
             </div>
-          ) : (
-            <Sun className="w-4 h-4" />
           )}
-        </button>
+
+          <div className="group relative">
+            <button 
+              type="button"
+              onClick={toggleTheme}
+              aria-label={nextThemeLabel}
+              className="flex h-7 w-7 items-center justify-center rounded-full border border-transparent text-brand-text/40 transition-colors hover:border-brand-border/40 hover:text-brand-text/75 focus:outline-none focus:ring-1 focus:ring-brand-text/20"
+            >
+              {theme === "light" ? (
+                <Moon className="w-3.5 h-3.5" />
+              ) : theme === "dark" ? (
+                <div className="w-3.5 h-3.5 rounded-full border border-current flex items-center justify-center">
+                  <div className="w-1.5 h-1.5 bg-current rounded-full" />
+                </div>
+              ) : (
+                <Sun className="w-3.5 h-3.5" />
+              )}
+            </button>
+            <div className="pointer-events-none absolute right-0 top-full z-50 mt-2 whitespace-nowrap rounded-sm border border-brand-border bg-brand-bg px-2.5 py-1.5 text-[9px] font-mono uppercase tracking-wider text-brand-text/60 opacity-0 shadow-lg transition-opacity group-hover:opacity-100 group-focus-within:opacity-100">
+              {nextThemeLabel}
+            </div>
+          </div>
+        </div>
       </header>
 
+      {!authSession ? (
+        <AuthPanel
+          error={authError}
+          isConfigured={isSupabaseConfigured}
+          isLoading={isAuthLoading}
+          onGoogleSignIn={signInWithGoogle}
+        />
+      ) : (
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 md:px-12 py-8 md:py-12 flex flex-col justify-between">
         
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 items-start">
@@ -1528,9 +1673,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
           </div>
         </motion.div>
       </main>
+      )}
     </div>
   );
 }
-
-
-
