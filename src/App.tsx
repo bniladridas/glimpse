@@ -629,11 +629,11 @@ export default function App() {
                   </AnimatePresence>
                 </section>
 
-                <section className="space-y-6 pt-4 border-t border-brand-border/10">
-                  <div className="space-y-2">
+                <section className="grid grid-cols-2 gap-x-5 pt-4 border-t border-brand-border/10">
+                  <div className="space-y-1.5 prose-none">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Logo Size</span>
-                      <span className="text-[9px] font-mono text-stone-400 dark:text-stone-500">{Math.round(iconScale * 100)}%</span>
+                      <span className="text-[8.5px] font-mono tracking-wider text-stone-400 dark:text-stone-500 uppercase">Size</span>
+                      <span className="text-[8px] font-mono text-stone-400 dark:text-stone-500">{Math.round(iconScale * 100)}%</span>
                     </div>
                     <div className="relative flex items-center">
                       <input 
@@ -643,15 +643,15 @@ export default function App() {
                         step="0.05"
                         value={iconScale}
                         onChange={(e) => setIconScale(parseFloat(e.target.value))}
-                        className="w-full h-0.5 bg-stone-200 dark:bg-stone-800 appearance-none cursor-pointer outline-none rounded-full accent-stone-950 dark:accent-stone-50"
+                        className="w-full h-0.5 bg-brand-border/20 appearance-none cursor-pointer outline-none rounded-full accent-brand-text opacity-70 hover:opacity-100 transition-opacity duration-150"
                       />
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="space-y-1.5 prose-none">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Stroke Weight</span>
-                      <span className="text-[9px] font-mono text-stone-400 dark:text-stone-500">{strokeWidth.toFixed(1)}px</span>
+                      <span className="text-[8.5px] font-mono tracking-wider text-stone-400 dark:text-stone-500 uppercase">Stroke</span>
+                      <span className="text-[8px] font-mono text-stone-400 dark:text-stone-500">{strokeWidth.toFixed(1)}px</span>
                     </div>
                     <div className="relative flex items-center">
                       <input 
@@ -661,7 +661,7 @@ export default function App() {
                         step="0.1"
                         value={strokeWidth}
                         onChange={(e) => setStrokeWidth(parseFloat(e.target.value))}
-                        className="w-full h-0.5 bg-stone-200 dark:bg-stone-800 appearance-none cursor-pointer outline-none rounded-full accent-stone-950 dark:accent-stone-50"
+                        className="w-full h-0.5 bg-brand-border/20 appearance-none cursor-pointer outline-none rounded-full accent-brand-text opacity-70 hover:opacity-100 transition-opacity duration-150"
                       />
                     </div>
                   </div>
