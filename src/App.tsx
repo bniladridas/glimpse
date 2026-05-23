@@ -82,7 +82,8 @@ const NAV_TABS = [
   { id: "guide", label: "Help", Icon: Icons.CircleHelp },
 ] as const;
 
-function removeAuthUrlFragment() {
+function removeAuthUrlParts(includeCode = false) {
+  const url = new URL(window.location.href);
   const hashParams = new URLSearchParams(window.location.hash.slice(1));
   const hasAuthFragment = [
     "access_token",
@@ -92,16 +93,25 @@ function removeAuthUrlFragment() {
     "expires_in",
     "token_type",
   ].some((key) => hashParams.has(key));
+  const hasAuthCode = url.searchParams.has("code");
 
-  if (window.location.href.endsWith("#") || hasAuthFragment) {
-    window.history.replaceState(null, document.title, window.location.pathname + window.location.search);
+  if (hasAuthFragment || window.location.href.endsWith("#") || (includeCode && hasAuthCode)) {
+    if (includeCode) {
+      url.searchParams.delete("code");
+    }
+
+    window.history.replaceState(
+      null,
+      document.title,
+      `${url.pathname}${url.search}${url.hash && !hasAuthFragment ? url.hash : ""}`,
+    );
   }
 }
 
-function scheduleAuthUrlCleanup() {
-  removeAuthUrlFragment();
-  window.setTimeout(removeAuthUrlFragment, 0);
-  window.setTimeout(removeAuthUrlFragment, 250);
+function scheduleAuthUrlCleanup(includeCode = false) {
+  removeAuthUrlParts(includeCode);
+  window.setTimeout(() => removeAuthUrlParts(includeCode), 0);
+  window.setTimeout(() => removeAuthUrlParts(includeCode), 250);
 }
 
 export default function App() {
@@ -120,9 +130,11 @@ export default function App() {
   }, [theme]);
 
   useEffect(() => {
+    const handleHashChange = () => scheduleAuthUrlCleanup();
+
     scheduleAuthUrlCleanup();
-    window.addEventListener("hashchange", scheduleAuthUrlCleanup);
-    return () => window.removeEventListener("hashchange", scheduleAuthUrlCleanup);
+    window.addEventListener("hashchange", handleHashChange);
+    return () => window.removeEventListener("hashchange", handleHashChange);
   }, []);
 
   const toggleTheme = () => {
@@ -210,7 +222,7 @@ export default function App() {
       }
       setAuthSession(data.session);
       setIsAuthLoading(false);
-      scheduleAuthUrlCleanup();
+      scheduleAuthUrlCleanup(Boolean(data.session));
     });
 
     const {
@@ -219,7 +231,7 @@ export default function App() {
       setAuthSession(session);
       setIsAuthLoading(false);
       setAuthError(null);
-      scheduleAuthUrlCleanup();
+      scheduleAuthUrlCleanup(Boolean(session));
     });
 
     return () => {
