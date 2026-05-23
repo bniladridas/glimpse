@@ -4,24 +4,7 @@ import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { removeBackground } from "@imgly/background-removal";
 
-// Curated list of symbols for the deterministic builder
-const LOGO_SYMBOLS = [
-  // Mobile Software
-  "Smartphone", "Tablet", "AppWindow", "Fingerprint", "Bluetooth", "QrCode", "Bell", "Share2", "Compass", "MessageSquare",
-  // Computer / Infrastructure
-  "Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse",
-  // Academic / School / EdTech
-  "GraduationCap", "BookOpen", "Book", "School", "Library", "Trophy", "Calculator", "Award", "PenTool", "Feather", "Bookmark", "Brain", "Microscope",
-  // Corporate / Enterprise
-  "Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign",
-  // Shapes & Layouts
-  "NodeTree", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout",
-  // Nature & Elements
-  "Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart",
-  // Tools & Action symbols
-  "Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"
-];
-
+// Curated list of symbols for the deterministic builder and categories
 const SYMBOL_CATEGORIES: Record<string, string[]> = {
   mobile: ["Smartphone", "Tablet", "AppWindow", "Fingerprint", "Bluetooth", "QrCode", "Bell", "Share2", "Compass", "MessageSquare"],
   computer: ["Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse"],
@@ -29,8 +12,11 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
   corporate: ["Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign"],
   shapes: ["NodeTree", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
   nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
+  browser: ["Home", "Search", "Download", "Share2", "Copy", "ExternalLink", "Maximize2", "Plus", "Settings", "SlidersHorizontal", "Globe", "Link", "ArrowUpRight", "RefreshCw", "Folder", "Menu", "AppWindow", "Trash2"],
   tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"]
 };
+
+const LOGO_SYMBOLS = Array.from(new Set(Object.values(SYMBOL_CATEGORIES).flat()));
 
 const FONTS = [
   { name: "Sans", class: "font-sans" },
@@ -55,7 +41,7 @@ const CANVAS_COLORS = [
 ];
 
 const CHANGELOG = [
-  { version: "v1.22", date: "Today", features: ["Integrated React and Raw SVG code exporters for every catalog symbol to support instantaneous design-to-development code reuse"] },
+  { version: "v1.23", date: "Today", features: ["Added a dedicated browser layout & navigation category containing standard browser actions (Home, Search, Download, Share, Copy, ExternalLink, Maximize, Settings, Sliders, Globe, Trash, Link, ArrowUpRight, etc.)"] },
   { version: "v1.21", date: "Today", features: ["Introduced a floating 'Symbol Atelier' popout drawer that anchors alongside the controls panel, completely preventing vertical layout clutter", "Created a high-contrast inline preview section with responsive focus tiles and immediate category shortcuts", "Perfected responsive overlays with fluid spring gestures on mobile screens"] },
   { version: "v1.20", date: "Today", features: ["Replaced horizontal category scrolling with flexwrap containers to eradicate browser scrollbar overlays and restore instantaneous icon selection"] },
   { version: "v1.19", date: "Today", features: ["Integrated dynamic panel expansion for the icon catalog, featuring both compact minimal and ultra-wide grid modes"] },
@@ -120,6 +106,9 @@ export default function App() {
   const [iconScale, setIconScale] = useState(1.0);
   const [strokeWidth, setStrokeWidth] = useState(1.5);
   const [copiedType, setCopiedType] = useState<string | null>(null);
+  const [showGuides, setShowGuides] = useState(true);
+  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
+  const [isHovered, setIsHovered] = useState(false);
   
   // Isolator State
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -484,7 +473,7 @@ export default function App() {
                     <div className="col-span-8 pl-1 flex flex-col justify-center h-14">
                       <span className="text-[8px] font-mono tracking-widest text-stone-400 dark:text-stone-600 uppercase mb-1.5 block">Quick Select</span>
                       <div className="flex gap-1.5">
-                        {["Smartphone", "Cpu", "GraduationCap", "Briefcase", "NodeTree"].map((fav) => (
+                        {["Circle", "Triangle", "Hexagon", "Infinity", "NodeTree"].map((fav) => (
                           <button
                             key={fav}
                             onClick={() => setBuilderIcon(fav)}
@@ -576,7 +565,7 @@ export default function App() {
 
                           {/* Industry Clusters & Shape Filters */}
                           <div className="flex flex-wrap gap-1.5 shrink-0 max-h-24 overflow-y-auto no-scrollbar">
-                            {["all", "mobile", "computer", "academic", "corporate", "shapes", "nature", "tools"].map((cat) => (
+                            {["all", "mobile", "computer", "academic", "corporate", "shapes", "nature", "browser", "tools"].map((cat) => (
                               <button 
                                 key={cat}
                                 onClick={() => setIconCategory(cat)}
@@ -861,20 +850,75 @@ export default function App() {
                     key="builder"
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
-                    className="w-full h-full flex flex-col items-center justify-center p-12 transition-colors duration-300 relative overflow-hidden"
+                    onMouseMove={(e) => {
+                      const rect = e.currentTarget.getBoundingClientRect();
+                      const x = Math.round(e.clientX - rect.left);
+                      const y = Math.round(e.clientY - rect.top);
+                      setMousePos({ x, y });
+                    }}
+                    onMouseEnter={() => setIsHovered(true)}
+                    onMouseLeave={() => setIsHovered(false)}
+                    className="w-full h-full flex flex-col items-center justify-center p-12 transition-colors duration-300 relative overflow-hidden group/canvas"
                     style={isBgTransparent ? {
                       backgroundImage: theme === "light" 
                         ? "linear-gradient(45deg, #F5F5F5 25%, transparent 25%), linear-gradient(-45deg, #F5F5F5 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #F5F5F5 75%), linear-gradient(-45deg, transparent 75%, #F5F5F5 75%)"
                         : theme === "grey"
-                        ? "linear-gradient(45deg, #4a4a4a 25%, transparent 25%), linear-gradient(-45deg, #4a4a4a 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #4a4a4a 75%), linear-gradient(-45deg, transparent 75%, #4a4a4a 75%)"
-                        : "linear-gradient(45deg, #1c1917 25%, transparent 25%), linear-gradient(-45deg, #1c1917 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #1c1917 75%), linear-gradient(-45deg, transparent 75%, #1c1917 75%)",
+                        ? "linear-gradient(45deg, #444444 25%, transparent 25%), linear-gradient(-45deg, #444444 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #444444 75%), linear-gradient(-45deg, transparent 75%, #444444 75%)"
+                        : "linear-gradient(45deg, #12100f 25%, transparent 25%), linear-gradient(-45deg, #12100f 25%, transparent 25%), linear-gradient(45deg, transparent 75%, #12100f 75%), linear-gradient(-45deg, transparent 75%, #12100f 75%)",
                       backgroundSize: "16px 16px",
                       backgroundPosition: "0 0, 0 8px, 8px -8px, -8px 0px"
                     } : {
                       backgroundColor: customBgColor
                     }}
                   >
-                    <div className="flex flex-col items-center gap-6">
+                    {/* CAD Guides Overlay System - Non-destructive, very quiet visually */}
+                    {showGuides && (
+                      <div className="absolute inset-0 pointer-events-none overflow-hidden select-none">
+                        {/* Bisecting axes */}
+                        <div className="absolute top-1/2 left-0 right-0 h-px border-t border-dashed border-brand-text/[0.04]" />
+                        <div className="absolute left-1/2 top-0 bottom-0 w-px border-l border-dashed border-brand-text/[0.04]" />
+                        
+                        {/* Golden ratio/thirds guide lines - very quiet */}
+                        <div className="absolute top-1/3 left-0 right-0 h-px border-t border-dashed border-brand-text/[0.015]" />
+                        <div className="absolute top-2/3 left-0 right-0 h-px border-t border-dashed border-brand-text/[0.015]" />
+                        <div className="absolute left-1/3 top-0 bottom-0 w-px border-l border-dashed border-brand-text/[0.015]" />
+                        <div className="absolute left-2/3 top-0 bottom-0 w-px border-l border-dashed border-brand-text/[0.015]" />
+
+                        {/* Concentric targets */}
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-48 h-48 rounded-full border border-dashed border-brand-text/[0.03]" />
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-80 h-80 rounded-full border border-dashed border-brand-text/[0.015]" />
+
+                        {/* Tech-driven corner croppers */}
+                        <div className="absolute top-4 left-4 w-2 h-2 border-t border-l border-brand-text/10" />
+                        <div className="absolute top-4 right-4 w-2 h-2 border-t border-r border-brand-text/10" />
+                        <div className="absolute bottom-4 left-4 w-2 h-2 border-b border-l border-brand-text/10" />
+                        <div className="absolute bottom-4 right-4 w-2 h-2 border-b border-r border-brand-text/10" />
+                      </div>
+                    )}
+
+                    {/* Interactive UI Overlay Controls (top & bottom edges) - completely hidden on image saves */}
+                    <div className="absolute inset-x-4 top-4 flex justify-between items-center pointer-events-auto select-none">
+                      {/* Guides status option toggle */}
+                      <button 
+                        onClick={() => setShowGuides(!showGuides)}
+                        className="text-[8px] font-mono tracking-widest text-brand-text/30 hover:text-brand-text transition-colors duration-200 capitalize"
+                      >
+                        [guides: {showGuides ? "on" : "off"}]
+                      </button>
+
+                      {/* Quiet cursor coordinates display */}
+                      <span className="text-[8px] font-mono tracking-widest text-brand-text/30 select-none">
+                        {isHovered ? `X:${mousePos.x} Y:${mousePos.y}` : "COORDINATES"}
+                      </span>
+                    </div>
+
+                    <div className="absolute inset-x-4 bottom-4 flex justify-between items-center pointer-events-none select-none text-[8px] font-mono tracking-widest text-brand-text/25">
+                      <span>SIZE: {Math.round(iconScale * 100)}%</span>
+                      <span className="uppercase">{builderFont.name} / {builderTextWeight}</span>
+                    </div>
+
+                    {/* Outer centered composition block */}
+                    <div className="flex flex-col items-center gap-6 relative z-10">
                       <div id="preview-symbol">
                         <DynamicIcon 
                           name={builderIcon} 
