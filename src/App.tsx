@@ -6,10 +6,31 @@ import { removeBackground } from "@imgly/background-removal";
 
 // Curated list of symbols for the deterministic builder
 const LOGO_SYMBOLS = [
-  "Box", "Circle", "Triangle", "Hexagon", "Shield", "Zap", "Flame", "Droplet", "Sun", "Moon", 
-  "Cloud", "Leaf", "Flower", "Anchor", "Compass", "Key", "Lock", "Heart", "Star", "Target",
-  "Award", "Briefcase", "Cpu", "Globe", "Layers", "MousePointer2", "Rocket", "Server", "Terminal", "Wifi"
+  // Mobile Software
+  "Smartphone", "Tablet", "AppWindow", "Fingerprint", "Bluetooth", "QrCode", "Bell", "Share2", "Compass", "MessageSquare",
+  // Computer / Infrastructure
+  "Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse",
+  // Academic / School / EdTech
+  "GraduationCap", "BookOpen", "Book", "School", "Library", "Trophy", "Calculator", "Award", "PenTool", "Feather", "Bookmark", "Brain", "Microscope",
+  // Corporate / Enterprise
+  "Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign",
+  // Shapes & Layouts
+  "NodeTree", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout",
+  // Nature & Elements
+  "Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart",
+  // Tools & Action symbols
+  "Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"
 ];
+
+const SYMBOL_CATEGORIES: Record<string, string[]> = {
+  mobile: ["Smartphone", "Tablet", "AppWindow", "Fingerprint", "Bluetooth", "QrCode", "Bell", "Share2", "Compass", "MessageSquare"],
+  computer: ["Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse"],
+  academic: ["GraduationCap", "BookOpen", "Book", "School", "Library", "Trophy", "Calculator", "Award", "PenTool", "Feather", "Bookmark", "Brain", "Microscope"],
+  corporate: ["Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign"],
+  shapes: ["NodeTree", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
+  nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
+  tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"]
+};
 
 const FONTS = [
   { name: "Sans", class: "font-sans" },
@@ -34,6 +55,16 @@ const CANVAS_COLORS = [
 ];
 
 const CHANGELOG = [
+  { version: "v1.21", date: "Today", features: ["Introduced a floating 'Symbol Atelier' popout drawer that anchors alongside the controls panel, completely preventing vertical layout clutter", "Created a high-contrast inline preview section with responsive focus tiles and immediate category shortcuts", "Perfected responsive overlays with fluid spring gestures on mobile screens"] },
+  { version: "v1.20", date: "Today", features: ["Replaced horizontal category scrolling with flexwrap containers to eradicate browser scrollbar overlays and restore instantaneous icon selection"] },
+  { version: "v1.19", date: "Today", features: ["Integrated dynamic panel expansion for the icon catalog, featuring both compact minimal and ultra-wide grid modes"] },
+  { version: "v1.18", date: "Today", features: ["Introduced tailored icon libraries for specific industrial structures (Mobile developers, Computing hubs, Academic campuses, Corporate suites)", "Optimized the filter row layout to intuitively classify icons under smart taxonomies"] },
+  { version: "v1.17", date: "Today", features: ["Repositioned edge-to-edge header layout to naturally flow with document scroll for enhanced organic breathing space"] },
+  { version: "v1.16", date: "Today", features: ["Restructured edge-to-edge navigation bar styled with elegant backdrop details", "Expanded content container limits specifically for wide viewing arrays", "Calibrated general padding parameters for unmatched studio breathing room"] },
+  { version: "v1.15", date: "Today", features: ["Recalibrated screen spacing by removing redundant large header titles", "Restructured grid constraints for comfortable vertical breathing room", "Enhanced minimalist layout density to optimize tool parameters viewing"] },
+  { version: "v1.14", date: "Today", features: ["Integrated multimedia symbols (Mic, Play, Pause, Music, Headphones, Audio Volume)", "Added document & utility visuals (File, Check/Tick mark, Info indicator, Help/Guide bubble)", "Enabled dynamic layout vectors (Widescreen TV, Structural grids & Inset frames)"] },
+  { version: "v1.13", date: "Today", features: ["Expanded symbol library with digital screens (Computer, Laptop, Mobile, Dual-devices)", "Added clean vectors for operations (Refresh-loop, Ship, Erase/Wipe brush, Move, Hand)", "Integrated minimal tech components (Crown, Lightbulb, Atom, Feather, Pen, Puzzle, Code)"] },
+  { version: "v1.12", date: "Today", features: ["Logo scaling controls (Zoom in/out)", "Vector stroke path weight adjustment", "Text style weights (Light/Normal/Bold)", "Optimized icon visibility for dark, light & grey themes"] },
   { version: "v1.11", date: "Today", features: ["Simple Guide", "Better naming (Logo/Eraser)", "Cleaner layout"] },
   { version: "v1.10", date: "Today", features: ["Cleaner loading style", "Workspace cleanup", "Better transparency"] },
   { version: "v1.9", date: "Today", features: ["Simple loading view", "Interface cleanup", "Better animations"] },
@@ -74,13 +105,19 @@ export default function App() {
   
   // Builder State
   const [builderText, setBuilderText] = useState("GLIMPSE");
-  const [builderIcon, setBuilderIcon] = useState("Box");
+  const [builderIcon, setBuilderIcon] = useState("NodeTree");
   const [builderColor, setBuilderColor] = useState(COLORS[0]);
   const [customColor, setCustomColor] = useState(COLORS[0].hex);
   const [builderFont, setBuilderFont] = useState(FONTS[0]);
+  const [builderTextWeight, setBuilderTextWeight] = useState<"light" | "normal" | "bold">("light");
+  const [iconCategory, setIconCategory] = useState<string>("all");
+  const [iconSearch, setIconSearch] = useState<string>("");
+  const [isIconsExpanded, setIsIconsExpanded] = useState(false);
   const [isBgTransparent, setIsBgTransparent] = useState(false);
   const [builderBgColor, setBuilderBgColor] = useState(CANVAS_COLORS[0]);
   const [customBgColor, setCustomBgColor] = useState(CANVAS_COLORS[0].hex);
+  const [iconScale, setIconScale] = useState(1.0);
+  const [strokeWidth, setStrokeWidth] = useState(1.5);
   
   // Isolator State
   const [assetUrl, setAssetUrl] = useState<string | null>(null);
@@ -90,6 +127,12 @@ export default function App() {
   
   const builderRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const filteredSymbols = LOGO_SYMBOLS.filter(symbol => {
+    const matchesCategory = iconCategory === "all" || SYMBOL_CATEGORIES[iconCategory]?.includes(symbol);
+    const matchesSearch = symbol.toLowerCase().includes(iconSearch.toLowerCase());
+    return matchesCategory && matchesSearch;
+  });
 
   const processImage = useCallback(async (sourceUrl: string) => {
     setIsProcessing(true);
@@ -156,18 +199,31 @@ export default function App() {
     if (!rawSvg) return;
 
     const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
-    svgClone.setAttribute("width", "400");
-    svgClone.setAttribute("height", "400");
+    const targetSize = Math.round(400 * iconScale);
+    
+    // Clear any inline style size properties to prevent overriding attributes
+    if (svgClone.style) {
+      svgClone.style.width = "";
+      svgClone.style.height = "";
+    }
+    
+    svgClone.setAttribute("width", targetSize.toString());
+    svgClone.setAttribute("height", targetSize.toString());
+    svgClone.setAttribute("stroke-width", strokeWidth.toString());
+    svgClone.setAttribute("xmlns", "http://www.w3.org/2000/svg");
     svgClone.style.color = customColor;
 
-    const svgData = new XMLSerializer().serializeToString(svgClone);
+    let svgData = new XMLSerializer().serializeToString(svgClone);
+    // Replace all instances of currentColor with explicit hex customColor so it resolves in isolated blob context
+    svgData = svgData.replace(/currentColor/g, customColor);
+    
     const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
     const url = URL.createObjectURL(svgBlob);
 
     const img = new Image();
     img.onload = () => {
       // Logic for conditional centering
-      const iconSize = 400;
+      const iconSize = targetSize;
       const iconY = builderText.trim() ? canvas.height / 2 - 350 : canvas.height / 2 - (iconSize / 2);
       
       // Draw Icon
@@ -179,7 +235,8 @@ export default function App() {
         ctx.textAlign = "center";
         ctx.textBaseline = "middle";
         const fontName = builderFont.name === "Mono" ? "monospace" : builderFont.name === "Serif" ? "serif" : "sans-serif";
-        ctx.font = `bold 120px ${fontName}`;
+        const weightValue = builderTextWeight === "light" ? "300" : builderTextWeight === "bold" ? "bold" : "normal";
+        ctx.font = `${weightValue} 120px ${fontName}`;
         ctx.letterSpacing = "10px";
         ctx.fillText(builderText, canvas.width / 2, canvas.height / 2 + 150);
       }
@@ -191,78 +248,98 @@ export default function App() {
     img.src = url;
   };
 
-  const DynamicIcon = ({ name, className, style }: { name: string, className?: string, style?: React.CSSProperties }) => {
+  const DynamicIcon = ({ name, className, style, strokeWidth, width, height }: { name: string, className?: string, style?: React.CSSProperties, strokeWidth?: number, width?: number, height?: number }) => {
+    if (name === "NodeTree") {
+      return (
+        <svg 
+          viewBox="0 0 24 24" 
+          fill="none" 
+          stroke="currentColor" 
+          strokeWidth={strokeWidth ?? 1.5} 
+          strokeLinecap="round" 
+          strokeLinejoin="round" 
+          className={className} 
+          style={style}
+          width={width ?? 20}
+          height={height ?? 20}
+        >
+          <line x1="12" y1="12" x2="18" y2="7" />
+          <line x1="12" y1="12" x2="18" y2="17" />
+          <line x1="12" y1="12" x2="6" y2="12" />
+          <circle cx="12" cy="12" r="2.5" fill="currentColor" />
+          <circle cx="18" cy="7" r="1.5" fill="currentColor" />
+          <circle cx="18" cy="17" r="1.5" fill="currentColor" />
+          <circle cx="6" cy="12" r="1.5" fill="currentColor" />
+        </svg>
+      );
+    }
     // @ts-ignore
     const IconComponent = Icons[name] || Icons.Box;
-    return <IconComponent className={className} style={style} />;
+    return <IconComponent className={className} style={style} strokeWidth={strokeWidth ?? 1.5} size={width || height || 20} />;
   };
 
   return (
-    <div className="min-h-screen bg-brand-bg font-sans text-brand-text selection:bg-stone-100 uppercase tracking-tighter transition-colors duration-300">
-      <main className="max-w-6xl mx-auto px-6 py-16 md:py-32">
+    <div className="min-h-screen bg-brand-bg font-sans text-brand-text selection:bg-stone-100 transition-colors duration-300 flex flex-col">
+      {/* Premium edge-to-edge top header */}
+      <header className="w-full border-b border-brand-border/10 py-4 px-6 md:px-12 flex items-center justify-between bg-brand-bg transition-all">
+        <div className="flex items-center gap-8 relative">
+          <div className="w-5 h-5 grayscale opacity-40 hover:opacity-100 transition-all">
+            <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
+          </div>
+          <div className="flex gap-8 relative border-l border-brand-border/10 pl-8">
+            {[
+              { id: "create", label: "LOGO" },
+              { id: "isolate", label: "CLEAN" },
+              { id: "guide", label: "HELP" }
+            ].map((tab) => (
+              <button 
+                key={tab.id}
+                onClick={() => setActiveTab(tab.id as any)}
+                className={`text-[9px] tracking-[0.2em] transition-all duration-500 relative py-1.5 uppercase font-semibold ${
+                  activeTab === tab.id 
+                    ? "text-brand-text" 
+                    : theme === "grey"
+                      ? "text-stone-500 hover:text-stone-400"
+                      : "text-stone-400 dark:text-stone-700 hover:text-stone-500"
+                }`}
+              >
+                {tab.label}
+                {activeTab === tab.id && (
+                  <motion.div 
+                    layoutId="active-tab-line"
+                    className="absolute -bottom-1.5 left-0 right-0 h-px bg-brand-text/30"
+                    transition={{ type: "spring", stiffness: 500, damping: 40 }}
+                  />
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
         
-        <header className="mb-20 md:mb-32 space-y-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-8 relative">
-              <div className="w-6 h-6 grayscale opacity-40 hover:opacity-100 transition-all">
-                <img src={COMPANY_LOGO_URL} alt="Company" className="w-full h-full object-contain" />
-              </div>
-              <div className="flex gap-10 relative border-l border-brand-border/10 pl-10">
-                {[
-                  { id: "create", label: "logo" },
-                  { id: "isolate", label: "clean" },
-                  { id: "guide", label: "help" }
-                ].map((tab) => (
-                  <button 
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id as any)}
-                    className={`text-[10px] tracking-[0.2em] transition-all duration-500 relative py-1 ${
-                      activeTab === tab.id 
-                        ? "text-brand-text font-medium" 
-                        : theme === "grey"
-                          ? "text-stone-500 hover:text-stone-400"
-                          : "text-stone-300 dark:text-stone-800 hover:text-stone-400 dark:hover:text-stone-600"
-                    }`}
-                  >
-                    {tab.label}
-                    {activeTab === tab.id && (
-                      <motion.div 
-                        layoutId="active-tab-line"
-                        className="absolute -bottom-1 left-0 right-0 h-px bg-brand-text/30"
-                        transition={{ type: "spring", stiffness: 500, damping: 40 }}
-                      />
-                    )}
-                  </button>
-                ))}
-              </div>
-          </div>
-          
-          <button 
-            onClick={toggleTheme}
-            className={`p-2 transition-colors flex items-center gap-2 group ${
-              theme === "light" ? "text-stone-300" : 
-              theme === "dark" ? "text-stone-800" : "text-stone-500"
-            } hover:text-brand-text`}
-          >
-              {theme === "light" ? (
-                <Moon className="w-4 h-4" />
-              ) : theme === "dark" ? (
-                <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">
-                  <div className="w-2 h-2 bg-current rounded-full" />
-                </div>
-              ) : (
-                <Sun className="w-4 h-4" />
-              )}
-            </button>
-          </div>
-          <h1 className="text-3xl md:text-5xl font-light tracking-tighter leading-tight">
-            {activeTab === "create" ? <>Logo<br />Maker</> : activeTab === "isolate" ? <>Background<br />Eraser</> : <>User<br />Guide</>}
-          </h1>
-        </header>
+        <button 
+          onClick={toggleTheme}
+          className={`p-1.5 transition-colors flex items-center gap-2 group ${
+            theme === "light" ? "text-stone-300" : 
+            theme === "dark" ? "text-stone-800" : "text-stone-500"
+          } hover:text-brand-text`}
+        >
+          {theme === "light" ? (
+            <Moon className="w-4 h-4" />
+          ) : theme === "dark" ? (
+            <div className="w-4 h-4 rounded-full border border-current flex items-center justify-center">
+              <div className="w-2 h-2 bg-current rounded-full" />
+            </div>
+          ) : (
+            <Sun className="w-4 h-4" />
+          )}
+        </button>
+      </header>
 
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 md:gap-24 items-start">
+      <main className="flex-1 max-w-7xl w-full mx-auto px-6 md:px-12 py-8 md:py-12 flex flex-col justify-between">
+        
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 md:gap-16 items-start">
           
-          <div className="lg:col-span-4 space-y-12">
+          <div className="lg:col-span-4 space-y-12 relative">
             {activeTab === "guide" ? (
               <motion.div 
                 initial={{ opacity: 0, x: -10 }}
@@ -270,23 +347,28 @@ export default function App() {
                 className="space-y-12"
               >
                 <section className="space-y-4">
-                  <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Logo Making</span>
+                  <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Logo Making</span>
                   <p className="text-sm text-stone-500 font-light leading-relaxed">
                     Quickly create a logo. Use symbols and text to build your identity. Turn on 'Alpha' for a clear background.
                   </p>
                 </section>
                 <section className="space-y-4 pt-8 border-t border-brand-border/10">
-                   <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Updates</span>
+                   <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Updates</span>
                    <div className="space-y-6 pt-2">
                      {CHANGELOG.slice(0, 3).map((item) => (
-                       <div key={item.version} className="space-y-2">
+                       <div key={item.version} className="space-y-2 border-b border-brand-border/5 pb-4 last:border-0 last:pb-0">
                          <div className="flex items-center justify-between">
-                            <span className="text-[9px] font-bold text-brand-text opacity-40 uppercase">{item.version}</span>
-                            <span className="text-[8px] font-medium text-stone-300 dark:text-stone-800 lowercase">{item.date}</span>
+                            <span className="text-[10px] font-semibold text-brand-text opacity-50 uppercase">{item.version}</span>
+                            <span className="text-[9px] font-medium text-stone-400 dark:text-stone-500 lowercase">{item.date}</span>
                          </div>
-                         <p className="text-[10px] text-stone-400 dark:text-stone-600 leading-relaxed italic">
-                           {item.features[0]}
-                         </p>
+                         <ul className="space-y-1 list-none pl-0">
+                           {item.features.map((feature, idx) => (
+                             <li key={idx} className="text-[11px] text-stone-500 dark:text-stone-400 leading-relaxed flex items-start gap-2">
+                               <span className="text-stone-300 dark:text-stone-700 select-none mt-1.5 font-bold text-[6px]">■</span>
+                               <span>{feature}</span>
+                             </li>
+                           ))}
+                         </ul>
                        </div>
                      ))}
                    </div>
@@ -300,55 +382,252 @@ export default function App() {
                     type="text" 
                     value={builderText}
                     onChange={(e) => setBuilderText(e.target.value.toUpperCase())}
-                    className="w-full bg-transparent border-b border-brand-border py-2 outline-none text-sm font-bold tracking-widest focus:border-brand-text transition-colors"
+                    className="w-full bg-transparent border-b border-brand-border py-2 outline-none text-sm font-light tracking-widest focus:border-brand-text transition-colors"
                     placeholder="NAME"
                   />
-                  <div className="flex gap-6">
-                    {FONTS.map(f => (
-                      <button 
-                        key={f.name}
-                        onClick={() => setBuilderFont(f)}
-                        className={`text-[10px] font-bold tracking-widest transition-all duration-300 ${
-                          builderFont.name === f.name 
-                            ? "text-brand-text scale-105" 
-                            : theme === "grey"
-                              ? "text-stone-500 hover:text-stone-400"
-                              : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
-                        }`}
-                      >
-                        {f.name.split(' ')[0]}
-                      </button>
-                    ))}
+                  <div className="flex flex-col gap-3">
+                    <span className="text-[9px] uppercase tracking-widest text-stone-400 dark:text-stone-600">Family</span>
+                    <div className="flex gap-6">
+                      {FONTS.map(f => (
+                        <button 
+                          key={f.name}
+                          onClick={() => setBuilderFont(f)}
+                          className={`text-[10px] font-medium tracking-widest transition-all duration-300 uppercase ${
+                            builderFont.name === f.name 
+                              ? "text-brand-text scale-105" 
+                              : theme === "grey"
+                                ? "text-stone-500 hover:text-stone-400"
+                                : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
+                          }`}
+                        >
+                          {f.name}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                  <div className="flex flex-col gap-3 pt-2">
+                    <span className="text-[9px] uppercase tracking-widest text-stone-400 dark:text-stone-600">Weight</span>
+                    <div className="flex gap-6">
+                      {(["light", "normal", "bold"] as const).map(w => (
+                        <button 
+                          key={w}
+                          onClick={() => setBuilderTextWeight(w)}
+                          className={`text-[10px] font-medium tracking-widest transition-all duration-300 uppercase ${
+                            builderTextWeight === w 
+                              ? "text-brand-text scale-105" 
+                              : theme === "grey"
+                                ? "text-stone-500 hover:text-stone-400"
+                                : "text-stone-300 dark:text-stone-600 hover:text-stone-500"
+                          }`}
+                        >
+                          {w}
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 </section>
 
-                <section className="space-y-4">
-                  <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Icons</span>
-                  <div className="grid grid-cols-5 gap-2">
-                    {LOGO_SYMBOLS.map(iconName => (
-                      <button 
-                        key={iconName}
-                        onClick={() => setBuilderIcon(iconName)}
-                        className="aspect-square flex items-center justify-center group transition-all"
-                      >
-                        <DynamicIcon 
-                          name={iconName} 
-                          className={`w-5 h-5 stroke-[1.5px] transition-all duration-300 ${
-                            builderIcon === iconName 
-                              ? "text-brand-text scale-125" 
-                              : theme === "grey"
-                                ? "text-stone-500 group-hover:text-stone-400"
-                                : "text-stone-300 dark:text-stone-700 group-hover:text-stone-500"
-                          }`} 
+                <section className="space-y-3.5">
+                  <div className="flex items-center justify-between">
+                    <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Active Icon</span>
+                    <button 
+                      onClick={() => setIsIconsExpanded(!isIconsExpanded)}
+                      className={`text-[9px] font-mono tracking-wider px-2.5 py-1 rounded-sm border transition-all duration-300 uppercase ${
+                        isIconsExpanded
+                          ? "bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-100 dark:border-stone-100 dark:text-stone-950 font-bold"
+                          : "border-brand-border/10 text-stone-400 dark:text-stone-500 hover:text-brand-text hover:border-brand-text/30 font-medium"
+                      }`}
+                    >
+                      {isIconsExpanded ? "Close Atelier [-]" : "Browse Atelier [+]"}
+                    </button>
+                  </div>
+
+                  {/* High Quality Inline Focus Tile and Shortcuts */}
+                  <div className="grid grid-cols-12 gap-3 border border-brand-border/10 rounded-sm p-3 bg-stone-100/10 dark:bg-stone-900/10 items-center">
+                    {/* Active Icon Display */}
+                    <div className="col-span-4 flex flex-col items-center justify-center border-r border-brand-border/10 pr-3 h-14">
+                      <div className="w-9 h-9 rounded-sm bg-stone-100/50 dark:bg-stone-900/50 border border-brand-border/5 flex items-center justify-center shadow-inner">
+                        <DynamicIcon name={builderIcon} className="w-5 h-5 text-brand-text stroke-[1.5px]" />
+                      </div>
+                      <span className="text-[8px] font-semibold tracking-tight text-center max-w-full truncate text-stone-400 mt-1">{builderIcon}</span>
+                    </div>
+
+                    {/* Quick Selection Library */}
+                    <div className="col-span-8 pl-1 flex flex-col justify-center h-14">
+                      <span className="text-[8px] font-mono tracking-widest text-stone-400 dark:text-stone-600 uppercase mb-1.5 block">Quick Select</span>
+                      <div className="flex gap-1.5">
+                        {["Smartphone", "Cpu", "GraduationCap", "Briefcase", "NodeTree"].map((fav) => (
+                          <button
+                            key={fav}
+                            onClick={() => setBuilderIcon(fav)}
+                            className={`w-7 h-7 rounded-sm border transition-all flex items-center justify-center ${
+                              builderIcon === fav
+                                ? "border-brand-text bg-stone-200/30 dark:bg-stone-800/30 scale-105"
+                                : "border-brand-border/10 hover:border-brand-border/25 hover:bg-stone-200/5 dark:hover:bg-stone-800/5"
+                            }`}
+                            title={`Quick select ${fav}`}
+                          >
+                            <DynamicIcon name={fav} className="w-3.5 h-3.5 text-stone-400 dark:text-stone-500" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Floating Symbol Atelier Popout */}
+                  <AnimatePresence>
+                    {isIconsExpanded && (
+                      <>
+                        {/* Mobile backdrop to block page & tap away to close */}
+                        <div 
+                          onClick={() => setIsIconsExpanded(false)}
+                          className="fixed inset-0 bg-stone-950/20 dark:bg-stone-950/50 backdrop-blur-[2px] z-30 lg:hidden"
                         />
-                      </button>
-                    ))}
+                        
+                        {/* Smooth Slide Drawer on Mobile, Absolute floating panel next to Sidebar on Desktop */}
+                        <motion.div
+                          initial={{ opacity: 0, scale: 0.98, y: 12, x: 0 }}
+                          animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
+                          exit={{ opacity: 0, scale: 0.98, y: 12 }}
+                          transition={{ type: "spring", stiffness: 420, damping: 32 }}
+                          className="fixed inset-x-0 bottom-0 max-h-[75vh] rounded-t-md bg-stone-50 dark:bg-stone-950 border-t border-brand-border/15 p-5 shadow-[0_-12px_40px_rgba(0,0,0,0.15)] z-40 lg:absolute lg:inset-auto lg:left-[105%] lg:top-0 lg:bottom-auto lg:w-[410px] lg:h-[580px] lg:rounded-sm lg:border lg:border-brand-border/15 lg:shadow-[0_25px_60px_rgba(0,0,0,0.25)] flex flex-col gap-4 overflow-hidden"
+                        >
+                          {/* Pane Header */}
+                          <div className="flex items-center justify-between pb-3 border-b border-brand-border/10 shrink-0">
+                            <div className="flex items-center gap-2">
+                              <span className="text-[10px] font-bold tracking-[0.2em] text-brand-text uppercase">Symbol Atelier</span>
+                              <span className="text-[9px] font-mono text-stone-400 bg-stone-200/30 dark:bg-stone-800/30 px-2 py-0.5 rounded-sm">
+                                {filteredSymbols.length} available
+                              </span>
+                            </div>
+                            <button 
+                              onClick={() => setIsIconsExpanded(false)}
+                              className="text-[9px] font-mono text-stone-400 dark:text-stone-500 hover:text-brand-text tracking-wider uppercase"
+                            >
+                              [Close]
+                            </button>
+                          </div>
+
+                          {/* Quick Filter Search */}
+                          <div className="relative flex items-center shrink-0">
+                            <Search className="absolute left-2.5 w-3 h-3 text-stone-400 dark:text-stone-600 pointer-events-none" />
+                            <input 
+                              type="text" 
+                              placeholder="Search all icons..." 
+                              value={iconSearch}
+                              onChange={(e) => setIconSearch(e.target.value)}
+                              className="w-full bg-stone-200/20 dark:bg-stone-900/20 border border-brand-border/10 rounded-sm pl-8 pr-7 py-1.5 outline-none text-[10px] tracking-wide focus:border-brand-text transition-colors placeholder:text-stone-400 dark:placeholder:text-stone-600"
+                            />
+                            {iconSearch && (
+                              <button 
+                                onClick={() => setIconSearch("")}
+                                className="absolute right-2.5 text-stone-400 hover:text-brand-text transition-colors text-[10px]"
+                              >
+                                ✕
+                              </button>
+                            )}
+                          </div>
+
+                          {/* Industry Clusters & Shape Filters */}
+                          <div className="flex flex-wrap gap-1.5 shrink-0 max-h-24 overflow-y-auto no-scrollbar">
+                            {["all", "mobile", "computer", "academic", "corporate", "shapes", "nature", "tools"].map((cat) => (
+                              <button 
+                                key={cat}
+                                onClick={() => setIconCategory(cat)}
+                                className={`text-[9px] font-bold tracking-wider px-2.5 py-0.5 rounded-full border transition-all duration-300 uppercase whitespace-nowrap ${
+                                  iconCategory === cat 
+                                    ? "bg-stone-900 border-stone-900 text-stone-50 dark:bg-stone-100 dark:border-stone-100 dark:text-stone-950" 
+                                    : theme === "grey"
+                                      ? "border-stone-800/20 text-stone-500 hover:text-stone-300 hover:border-stone-700/30"
+                                      : "border-brand-border/5 text-stone-400 dark:text-stone-600 hover:text-stone-600 dark:hover:text-stone-400 hover:border-brand-border/25"
+                                }`}
+                              >
+                                {cat}
+                              </button>
+                            ))}
+                          </div>
+
+                          {/* Interactive Grid containing all targeted symbols */}
+                          <div className="flex-1 overflow-y-auto pr-1 border border-brand-border/10 rounded-sm p-3 bg-stone-100/10 dark:bg-stone-900/10 scrollbar-thin scrollbar-thumb-stone-300 dark:scrollbar-thumb-stone-800">
+                            {filteredSymbols.length > 0 ? (
+                              <div className="grid grid-cols-6 gap-2">
+                                {filteredSymbols.map(iconName => (
+                                  <button 
+                                    key={iconName}
+                                    onClick={() => setBuilderIcon(iconName)}
+                                    className={`aspect-square flex items-center justify-center rounded-sm border transition-all duration-200 ${
+                                      builderIcon === iconName 
+                                        ? "bg-stone-200/40 dark:bg-stone-800/40 border-stone-300 dark:border-stone-700" 
+                                        : "border-transparent hover:bg-stone-200/10 dark:hover:bg-stone-800/10"
+                                    }`}
+                                    title={iconName}
+                                  >
+                                    <DynamicIcon 
+                                      name={iconName} 
+                                      className={`w-5 h-5 stroke-[1.5px] transition-all duration-300 ${
+                                        builderIcon === iconName 
+                                          ? "text-brand-text scale-110" 
+                                          : theme === "grey"
+                                            ? "text-stone-500 hover:text-stone-300"
+                                            : "text-stone-300 dark:text-stone-700 hover:text-stone-500"
+                                      }`} 
+                                    />
+                                  </button>
+                                ))}
+                              </div>
+                            ) : (
+                              <div className="py-12 text-center text-[10px] text-stone-400 dark:text-stone-600 italic">
+                                No symbols match your filter
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      </>
+                    )}
+                  </AnimatePresence>
+                </section>
+
+                <section className="space-y-6 pt-4 border-t border-brand-border/10">
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Logo Size</span>
+                      <span className="text-[9px] font-mono text-stone-400 dark:text-stone-500">{Math.round(iconScale * 100)}%</span>
+                    </div>
+                    <div className="relative flex items-center">
+                      <input 
+                        type="range" 
+                        min="0.4" 
+                        max="2.0" 
+                        step="0.05"
+                        value={iconScale}
+                        onChange={(e) => setIconScale(parseFloat(e.target.value))}
+                        className="w-full h-0.5 bg-stone-200 dark:bg-stone-800 appearance-none cursor-pointer outline-none rounded-full accent-stone-950 dark:accent-stone-50"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-2">
+                    <div className="flex items-center justify-between">
+                      <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Stroke Weight</span>
+                      <span className="text-[9px] font-mono text-stone-400 dark:text-stone-500">{strokeWidth.toFixed(1)}px</span>
+                    </div>
+                    <div className="relative flex items-center">
+                      <input 
+                        type="range" 
+                        min="0.5" 
+                        max="4.0" 
+                        step="0.1"
+                        value={strokeWidth}
+                        onChange={(e) => setStrokeWidth(parseFloat(e.target.value))}
+                        className="w-full h-0.5 bg-stone-200 dark:bg-stone-800 appearance-none cursor-pointer outline-none rounded-full accent-stone-950 dark:accent-stone-50"
+                      />
+                    </div>
                   </div>
                 </section>
 
                 <section className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Colors</span>
+                    <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Colors</span>
                     <div className="flex items-center gap-2">
                        <span className="text-[9px] font-mono text-stone-300">#</span>
                        <input 
@@ -386,11 +665,11 @@ export default function App() {
                 </section>
 
                 <section className="space-y-4">
-                  <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Glass</span>
+                  <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Glass</span>
                   <div className="flex gap-6">
                     <button 
                       onClick={() => setIsBgTransparent(false)}
-                      className={`text-[10px] font-bold tracking-widest transition-all duration-300 ${
+                      className={`text-[10px] font-medium tracking-widest transition-all duration-300 ${
                         !isBgTransparent 
                           ? "text-brand-text scale-105" 
                           : theme === "grey"
@@ -402,7 +681,7 @@ export default function App() {
                     </button>
                     <button 
                       onClick={() => setIsBgTransparent(true)}
-                      className={`text-[10px] font-bold tracking-widest transition-all duration-300 ${
+                      className={`text-[10px] font-medium tracking-widest transition-all duration-300 ${
                         isBgTransparent 
                           ? "text-brand-text scale-105" 
                           : theme === "grey"
@@ -418,7 +697,7 @@ export default function App() {
                 {!isBgTransparent && (
                   <section className="space-y-4 animate-in fade-in slide-in-from-top-2">
                     <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-bold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Canvas</span>
+                      <span className="text-[10px] font-semibold tracking-widest text-stone-400 dark:text-stone-500 uppercase">Canvas</span>
                       <div className="flex items-center gap-2">
                         <span className="text-[9px] font-mono text-stone-300">#</span>
                         <input 
@@ -509,21 +788,31 @@ export default function App() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    className="w-full h-full flex items-center justify-center p-12 relative"
+                    className="w-full h-full flex flex-col items-center justify-center p-12 text-center"
                   >
-                    <div className="flex flex-col items-center gap-8 opacity-40">
-                      <div className="grid grid-cols-3 gap-2">
-                        {[...Array(9)].map((_, i) => (
-                           <motion.div 
-                             key={i} 
-                             className="w-4 h-4 border border-brand-text"
-                             animate={{ opacity: [0.2, 1, 0.2] }}
-                             transition={{ duration: 2, delay: i * 0.1, repeat: Infinity }}
-                           />
-                        ))}
-                      </div>
-                      <span className="text-[10px] font-bold tracking-[0.8em] text-brand-text uppercase">System Online</span>
+                    <div className="relative w-32 h-32 flex items-center justify-center mb-6">
+                      <div className="absolute inset-0 border border-brand-text/5 rounded-full animate-pulse-slow" />
+                      <div className="absolute inset-4 border border-brand-text/5 rounded-full" />
+                      <div className="absolute inset-8 border border-brand-text/10 rounded-full" />
+                      <div className="absolute left-1/2 top-0 bottom-0 w-px bg-brand-text/[0.04]" />
+                      <div className="absolute top-1/2 left-0 right-0 h-px bg-brand-text/[0.04]" />
+                      
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1" className="w-12 h-12 text-brand-text/30">
+                        <line x1="12" y1="12" x2="18" y2="7" />
+                        <line x1="12" y1="12" x2="18" y2="17" />
+                        <line x1="12" y1="12" x2="6" y2="12" />
+                        <circle cx="12" cy="12" r="2.5" fill="none" />
+                        <circle cx="18" cy="7" r="1.5" />
+                        <circle cx="18" cy="17" r="1.5" />
+                        <circle cx="6" cy="12" r="1.5" />
+                      </svg>
                     </div>
+                    <span className="text-[10px] tracking-[0.4em] text-brand-text/50 uppercase font-medium">
+                      GLIMPSE BUILDER
+                    </span>
+                    <p className="text-[11px] text-stone-400 dark:text-stone-600 max-w-[240px] mt-2 font-light leading-relaxed">
+                      Create minimalist logotypes, customize vector proportions, or refine custom visual elements instantly.
+                    </p>
                   </motion.div>
                 ) : activeTab === "create" ? (
                   <motion.div 
@@ -545,16 +834,28 @@ export default function App() {
                   >
                     <div className="flex flex-col items-center gap-6">
                       <div id="preview-symbol">
-                        <DynamicIcon name={builderIcon} style={{ color: customColor }} className={`${builderText.trim() ? "w-24 h-24" : "w-40 h-40"} stroke-[1px] transition-all duration-500`} />
+                        <DynamicIcon 
+                          name={builderIcon} 
+                          strokeWidth={strokeWidth}
+                          width={(builderText.trim() ? 96 : 160) * iconScale}
+                          height={(builderText.trim() ? 96 : 160) * iconScale}
+                          style={{ 
+                            color: customColor
+                          }} 
+                          className="transition-all duration-300" 
+                        />
                       </div>
                       {builderText.trim() && (
-                        <span style={{ color: customColor }} className={`text-4xl font-light tracking-[0.2em] ${builderFont.class} animate-in fade-in slide-in-from-bottom-2`}>
+                        <span 
+                          style={{ 
+                            color: customColor,
+                            fontWeight: builderTextWeight === "light" ? 300 : builderTextWeight === "bold" ? 700 : 400
+                          }} 
+                          className={`text-4xl tracking-[0.2em] ${builderFont.class} animate-in fade-in slide-in-from-bottom-2`}
+                        >
                           {builderText}
                         </span>
                       )}
-                    </div>
-                    <div className="absolute bottom-8 right-8 text-[9px] font-bold text-stone-200 dark:text-stone-800 tracking-widest">
-                      PREVIEW ONLY
                     </div>
                   </motion.div>
                 ) : (
