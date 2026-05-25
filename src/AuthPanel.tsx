@@ -48,7 +48,7 @@ export function AuthPanel({
           type="button"
           onClick={onGoogleSignIn}
           disabled={!isConfigured || isLoading}
-          className="flex w-full items-center justify-between border border-brand-border px-4 py-3 text-[10px] font-bold uppercase tracking-[0.25em] text-brand-text transition-colors hover:border-brand-text disabled:cursor-not-allowed disabled:opacity-40"
+          className="flex w-full items-center justify-between rounded-md border border-brand-border px-4 py-3 text-[10px] font-bold uppercase tracking-[0.25em] text-brand-text transition-colors hover:border-brand-text disabled:cursor-not-allowed disabled:opacity-40"
         >
           <span>Continue with Google</span>
           {isLoading ? (

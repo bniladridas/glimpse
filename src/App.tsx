@@ -19,7 +19,12 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
   nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
   browser: ["Home", "Search", "Download", "Share2", "Copy", "ExternalLink", "Maximize2", "Plus", "Settings", "SlidersHorizontal", "Globe", "Link", "ArrowUpRight", "RefreshCw", "Folder", "Menu", "AppWindow", "Trash2"],
   tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"],
+  services: ["Printer", "PrinterCheck", "Scan", "ScanLine", "ScanText", "Copy", "Files", "FileStack", "FilePlus", "FileCheck", "Clipboard", "ClipboardList", "Notebook", "NotebookPen", "Pen", "PenLine", "Pencil", "PencilRuler", "Ruler", "Paperclip", "Package", "PackageCheck", "Truck", "Store", "ShoppingBag", "Receipt", "BadgeDollarSign"],
+  travel: ["Plane", "PlaneTakeoff", "PlaneLanding", "TicketsPlane", "Ticket", "Luggage", "BaggageClaim", "Map", "MapPin", "Route", "Navigation", "Compass", "Ship", "Train", "Bus", "Car", "Bike"],
+  apps: ["Apple", "Chrome", "MonitorSmartphone", "Smartphone", "TabletSmartphone", "Tablet", "Laptop", "Monitor", "AppWindow", "PanelsTopLeft", "PanelTop", "PanelRight", "LayoutDashboard", "Boxes", "Bot", "Gamepad2", "Watch", "Tv", "Cloud", "Globe", "Radio", "Wifi", "Bluetooth", "QrCode", "BadgeCheck", "ShieldCheck", "KeyRound", "LockKeyhole", "Fingerprint"],
+  industries: ["BriefcaseBusiness", "Landmark", "Hospital", "Stethoscope", "Ambulance", "Pill", "Utensils", "Hotel", "House", "Warehouse", "Factory", "School", "GraduationCap", "Camera", "Images", "Megaphone", "Paintbrush", "Wrench", "Hammer", "HardHat", "CircleDollarSign"],
   social: ["User", "Users", "UserPlus", "UserMinus", "UserCheck", "Contact", "Smile", "Heart", "Handshake", "Sparkles", "Mail", "MessageCircle", "PartyPopper", "Gift", "Coffee", "Crown"],
+  support: ["Bug", "BugOff", "BugPlay", "TriangleAlert", "CircleAlert", "ShieldAlert", "CircleHelp", "BadgeHelp", "MessageCircleHeart", "MessagesSquare", "HeartHandshake", "UserRound", "UsersRound"],
   hardware: ["Battery", "BatteryCharging", "Plug", "Power", "Radio", "RadioTower", "TowerControl", "Wifi", "Signal", "Satellite", "Tv", "Cpu", "Server", "Database", "Network", "HardDrive", "Laptop"]
 };
 
@@ -120,7 +125,7 @@ function getOAuthRedirectUrl() {
     return import.meta.env.VITE_SUPABASE_DESKTOP_REDIRECT_URL || "glimpse://auth/callback";
   }
 
-  return `${window.location.origin}/`;
+  return window.location.origin;
 }
 
 function getAndroidOAuthRedirectUrl() {
