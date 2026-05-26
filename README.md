@@ -11,8 +11,8 @@
 glimpse creates simple marks from icons, shapes, text, and images.
 
 <!-- nightly:start -->
-nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) · `075eb69` · gemini-2.5-flash
-note: This nightly build includes an update to.
+nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) · `803f0fd` · gemini-2.5-flash
+note: nightly app builds were refreshed.
 <!-- nightly:end -->
 
 ## exports
