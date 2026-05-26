@@ -1,5 +1,17 @@
 # glimpse
 
+[![web](https://img.shields.io/badge/web-app-64748b?style=flat-square)](https://glimpsehosting.vercel.app)
+[![macos](https://img.shields.io/badge/macos-app-737373?style=flat-square)](runbooks/macos-desktop.md)
+[![android](https://img.shields.io/badge/android-app-5f7661?style=flat-square)](runbooks/android.md)
+
+<br>
+
+<p align="center">
+  <img src="docs/assets/glimpse-desktop-app.png" alt="glimpse macos app" width="86%">
+</p>
+
+<br>
+
 logo symbols.
 
 ## app
