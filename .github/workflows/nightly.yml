@@ -185,12 +185,13 @@ jobs:
           }
 
           function formatNotes(summary, bullets) {
-            return [
-              summary,
-              "",
-              ...bullets.map((bullet) => `- ${bullet}`),
-              "",
-            ].join("\n");
+            const lines = [summary, ""];
+
+            if (bullets.length > 0) {
+              lines.push(...bullets.map((bullet) => `- ${bullet}`), "");
+            }
+
+            return lines.join("\n");
           }
 
           function writeNotes(summary, bullets) {
@@ -268,7 +269,7 @@ jobs:
             "Base the notes only on the commit subjects below.",
             "Write complete sentences, not fragments.",
             "Summary must be one short sentence.",
-            "Bullets must contain one to four complete, past-tense sentences.",
+            "Bullets are optional. If included, bullets must contain one to four complete, past-tense sentences.",
             "Do not include an assets section. Do not mention asset filenames.",
             "Example input: docs: refresh nightly note",
             "Example output: {\"summary\":\"this nightly build refreshes the project notes.\",\"bullets\":[\"refreshed the nightly note.\"]}",
@@ -298,7 +299,7 @@ jobs:
                         items: { type: "string" },
                       },
                     },
-                    required: ["summary", "bullets"],
+                    required: ["summary"],
                   },
                 },
               }),
@@ -321,7 +322,7 @@ jobs:
               ? parsed.bullets.map(validateBullet).filter(Boolean).slice(0, 4)
               : [];
 
-            if (!summary || bullets.length === 0) {
+            if (!summary) {
               throw new Error("invalid gemini notes");
             }
 
