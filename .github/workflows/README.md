@@ -59,6 +59,8 @@ Runs manually or every day at 02:20 UTC.
 
 Publishes a prerelease on the moving `nightly` tag.
 
+Uses Gemini to draft quiet prerelease notes from recent commits when `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set. Falls back to a static body when no key is configured.
+
 Refreshes the marked nightly note in `README.md` after the prerelease is published.
 
 Builds:
@@ -77,6 +79,19 @@ VITE_SUPABASE_URL
 VITE_SUPABASE_ANON_KEY
 VITE_SUPABASE_DESKTOP_REDIRECT_URL
 VITE_SUPABASE_ANDROID_REDIRECT_URL
+GEMINI_API_KEY
+```
+
+Optional repository variable:
+
+```text
+GEMINI_RELEASE_MODEL
+```
+
+Default:
+
+```text
+gemini-3.5-flash
 ```
 
 ## Release tags

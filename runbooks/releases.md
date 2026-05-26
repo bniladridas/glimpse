@@ -76,6 +76,8 @@ nightly
 
 After publishing, the workflow refreshes the marked nightly note in `README.md`.
 
+When `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set, the workflow drafts quiet prerelease notes from recent commits. Set `GEMINI_RELEASE_MODEL` to override the default `gemini-3.5-flash` model.
+
 Assets:
 
 ```text

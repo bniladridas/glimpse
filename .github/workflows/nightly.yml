@@ -126,6 +126,133 @@ jobs:
         with:
           path: nightly
 
+      - name: Prepare nightly release notes
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VESPER_GEMINI_API_KEY: ${{ secrets.VESPER_GEMINI_API_KEY }}
+          GEMINI_RELEASE_MODEL: ${{ vars.GEMINI_RELEASE_MODEL }}
+        run: |
+          node <<'EOF'
+          const fs = require("fs");
+          const { execFileSync } = require("child_process");
+
+          const assets = [
+            "glimpse-web-nightly.zip",
+            "glimpse-macos-nightly.dmg",
+            "glimpse-android-nightly.apk",
+          ];
+          const fallback = [
+            "nightly app builds from the latest main branch run.",
+            "",
+            "assets:",
+            ...assets.map((asset) => `- ${asset}`),
+            "",
+          ].join("\n");
+
+          function git(args) {
+            return execFileSync("git", args, { encoding: "utf8" }).trim();
+          }
+
+          function writeFallback() {
+            fs.writeFileSync("nightly-release-notes.md", fallback);
+          }
+
+          try {
+            execFileSync("git", ["fetch", "--force", "origin", "tag", "nightly"], { stdio: "ignore" });
+          } catch {
+            // First nightly runs may not have a previous moving tag yet.
+          }
+
+          let range = "HEAD~10..HEAD";
+          try {
+            git(["rev-parse", "--verify", "refs/tags/nightly"]);
+            range = "nightly..HEAD";
+          } catch {
+            // Use the fallback range above.
+          }
+
+          let commits = "";
+          try {
+            commits = git(["log", "--no-merges", "--format=%h %s", range]);
+          } catch {
+            commits = git(["log", "--no-merges", "--format=%h %s", "-10"]);
+          }
+
+          if (!commits) {
+            writeFallback();
+            process.exit(0);
+          }
+
+          const apiKey = process.env.GEMINI_API_KEY || process.env.VESPER_GEMINI_API_KEY;
+          const model = process.env.GEMINI_RELEASE_MODEL || "gemini-3.5-flash";
+
+          if (!apiKey) {
+            writeFallback();
+            process.exit(0);
+          }
+
+          const prompt = [
+            "Write quiet GitHub prerelease notes for a nightly build.",
+            "Return only markdown.",
+            "Use lowercase except product names.",
+            "Do not oversell. Do not mention internal workflow mechanics.",
+            "Base the notes only on the commit subjects below.",
+            "Write complete sentences. Do not return fragments.",
+            "Each bullet must end with a period.",
+            "Convert commit subjects into plain past-tense notes. Example: `docs: refresh nightly note` becomes `- refreshed the nightly note.`",
+            "Use this exact shape and keep the assets section exactly as shown:",
+            "one short summary sentence.",
+            "",
+            "- one to four concise bullets",
+            "",
+            "assets:",
+            "- glimpse-web-nightly.zip",
+            "- glimpse-macos-nightly.dmg",
+            "- glimpse-android-nightly.apk",
+            "",
+            "commits:",
+            commits,
+          ].join("\n");
+
+          const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
+
+          try {
+            const response = await fetch(endpoint, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({
+                contents: [{ parts: [{ text: prompt }] }],
+                generationConfig: {
+                  temperature: 0.2,
+                  maxOutputTokens: 512,
+                },
+              }),
+            });
+
+            if (!response.ok) {
+              throw new Error(`gemini ${response.status}`);
+            }
+
+            const data = await response.json();
+            let text = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
+
+            if (!text) {
+              throw new Error("empty gemini response");
+            }
+
+            const missingAsset = assets.some((asset) => !text.includes(asset));
+            if (missingAsset) {
+              text = text.replace(/\n+assets:\s*$/i, "");
+              text = `${text}\n\nassets:\n${assets.map((asset) => `- ${asset}`).join("\n")}`;
+            }
+
+            fs.writeFileSync("nightly-release-notes.md", `${text}\n`);
+          } catch (error) {
+            console.warn(`release note generation fell back: ${error.message}`);
+            writeFallback();
+          }
+          EOF
+
       - name: Move nightly tag
         run: |
           git tag --force nightly "$GITHUB_SHA"
@@ -139,13 +266,7 @@ jobs:
           prerelease: true
           make_latest: false
           overwrite_files: true
-          body: |
-            Nightly app builds from the latest main branch run.
-
-            Assets:
-            - glimpse-web-nightly.zip
-            - glimpse-macos-nightly.dmg
-            - glimpse-android-nightly.apk
+          body_path: nightly-release-notes.md
           files: |
             nightly/glimpse-web-nightly/glimpse-web-nightly.zip
             nightly/glimpse-macos-nightly/glimpse-macos-nightly.dmg
