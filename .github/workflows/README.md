@@ -59,9 +59,11 @@ Runs manually or every day at 02:20 UTC.
 
 Publishes a prerelease on the moving `nightly` tag.
 
-Uses Gemini to draft quiet prerelease notes from recent commits when `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set. Falls back to a static body when no key is configured.
+Uses Gemini to draft quiet prerelease notes from recent commits when `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set. Falls back to a static body when no key is configured or the generated JSON does not validate.
 
-Refreshes the marked nightly note in `README.md` after the prerelease is published.
+Refreshes the marked nightly note in `README.md` after the prerelease is published, using the release note summary and model.
+
+The release page already lists uploaded assets, so the generated body does not repeat asset filenames.
 
 Builds:
 

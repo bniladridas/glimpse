@@ -136,25 +136,97 @@ jobs:
           const fs = require("fs");
           const { execFileSync } = require("child_process");
 
-          const assets = [
-            "glimpse-web-nightly.zip",
-            "glimpse-macos-nightly.dmg",
-            "glimpse-android-nightly.apk",
-          ];
-          const fallback = [
-            "nightly app builds from the latest main branch run.",
-            "",
-            "assets:",
-            ...assets.map((asset) => `- ${asset}`),
-            "",
-          ].join("\n");
+          const apiKey = process.env.GEMINI_API_KEY || process.env.VESPER_GEMINI_API_KEY;
+          const model = process.env.GEMINI_RELEASE_MODEL || "gemini-3.5-flash";
+          const fallbackSummary = "nightly app builds were refreshed.";
+          const fallbackBullets = ["built web, macos, and android assets."];
+          const weakEndings = new Set(["a", "an", "and", "as", "at", "by", "for", "from", "in", "of", "on", "or", "the", "to", "with"]);
 
           function git(args) {
             return execFileSync("git", args, { encoding: "utf8" }).trim();
           }
 
+          function normalizeSentence(value) {
+            let text = String(value || "").trim().replace(/\s+/g, " ");
+            text = text.replace(/^[-*]\s+/, "");
+
+            if (!text) {
+              return "";
+            }
+
+            if (!/[.!?]$/.test(text)) {
+              text = `${text}.`;
+            }
+
+            return text;
+          }
+
+          function validateSummary(summary) {
+            const text = normalizeSentence(summary);
+            if (!text || text.length > 180) {
+              return "";
+            }
+
+            return text;
+          }
+
+          function validateBullet(bullet) {
+            const text = normalizeSentence(bullet);
+            if (!text || text.length > 160) {
+              return "";
+            }
+
+            const words = text.toLowerCase().replace(/[.!?]$/, "").split(/\s+/);
+            if (weakEndings.has(words[words.length - 1])) {
+              return "";
+            }
+
+            return text;
+          }
+
+          function formatNotes(summary, bullets) {
+            return [
+              summary,
+              "",
+              ...bullets.map((bullet) => `- ${bullet}`),
+              "",
+            ].join("\n");
+          }
+
+          function writeNotes(summary, bullets) {
+            fs.writeFileSync("nightly-release-summary.txt", `${summary}\n`);
+            fs.writeFileSync("nightly-release-model.txt", `${model}\n`);
+            fs.writeFileSync("nightly-release-notes.md", formatNotes(summary, bullets));
+          }
+
           function writeFallback() {
-            fs.writeFileSync("nightly-release-notes.md", fallback);
+            writeNotes(fallbackSummary, fallbackBullets);
+          }
+
+          function parseGeneratedJson(text) {
+            let source = text.replace(/^```(?:json)?\s*/i, "").replace(/\s*```$/, "").trim();
+            if (!source.startsWith("{")) {
+              const match = source.match(/\{[\s\S]*/);
+              source = match ? match[0] : source;
+            }
+
+            try {
+              return JSON.parse(source);
+            } catch {
+              const summaryMatch = source.match(/"summary"\s*:\s*"([^"]*)/);
+              const bulletMatches = [...source.matchAll(/"([^"]+?)"/g)]
+                .map((match) => match[1])
+                .filter((value) => value !== "summary" && value !== "bullets");
+
+              if (!summaryMatch && bulletMatches.length === 0) {
+                throw new Error("invalid gemini json");
+              }
+
+              return {
+                summary: summaryMatch?.[1] || "",
+                bullets: bulletMatches.filter((value) => value !== summaryMatch?.[1]),
+              };
+            }
           }
 
           try {
@@ -183,32 +255,23 @@ jobs:
             process.exit(0);
           }
 
-          const apiKey = process.env.GEMINI_API_KEY || process.env.VESPER_GEMINI_API_KEY;
-          const model = process.env.GEMINI_RELEASE_MODEL || "gemini-3.5-flash";
-
           if (!apiKey) {
             writeFallback();
             process.exit(0);
           }
 
           const prompt = [
-            "Write quiet GitHub prerelease notes for a nightly build.",
-            "Return only markdown.",
+            "Write quiet GitHub prerelease notes for a nightly build as JSON.",
+            "Return only valid JSON with this shape: {\"summary\":\"...\",\"bullets\":[\"...\"]}.",
             "Use lowercase except product names.",
             "Do not oversell. Do not mention internal workflow mechanics.",
             "Base the notes only on the commit subjects below.",
-            "Write complete sentences. Do not return fragments.",
-            "Each bullet must end with a period.",
-            "Convert commit subjects into plain past-tense notes. Example: `docs: refresh nightly note` becomes `- refreshed the nightly note.`",
-            "Use this exact shape and keep the assets section exactly as shown:",
-            "one short summary sentence.",
-            "",
-            "- one to four concise bullets",
-            "",
-            "assets:",
-            "- glimpse-web-nightly.zip",
-            "- glimpse-macos-nightly.dmg",
-            "- glimpse-android-nightly.apk",
+            "Write complete sentences, not fragments.",
+            "Summary must be one short sentence.",
+            "Bullets must contain one to four complete, past-tense sentences.",
+            "Do not include an assets section. Do not mention asset filenames.",
+            "Example input: docs: refresh nightly note",
+            "Example output: {\"summary\":\"this nightly build refreshes the project notes.\",\"bullets\":[\"refreshed the nightly note.\"]}",
             "",
             "commits:",
             commits,
@@ -225,6 +288,18 @@ jobs:
                 generationConfig: {
                   temperature: 0.2,
                   maxOutputTokens: 512,
+                  responseMimeType: "application/json",
+                  responseSchema: {
+                    type: "object",
+                    properties: {
+                      summary: { type: "string" },
+                      bullets: {
+                        type: "array",
+                        items: { type: "string" },
+                      },
+                    },
+                    required: ["summary", "bullets"],
+                  },
                 },
               }),
             });
@@ -240,13 +315,17 @@ jobs:
               throw new Error("empty gemini response");
             }
 
-            const missingAsset = assets.some((asset) => !text.includes(asset));
-            if (missingAsset) {
-              text = text.replace(/\n+assets:\s*$/i, "");
-              text = `${text}\n\nassets:\n${assets.map((asset) => `- ${asset}`).join("\n")}`;
+            const parsed = parseGeneratedJson(text);
+            const summary = validateSummary(parsed.summary);
+            const bullets = Array.isArray(parsed.bullets)
+              ? parsed.bullets.map(validateBullet).filter(Boolean).slice(0, 4)
+              : [];
+
+            if (!summary || bullets.length === 0) {
+              throw new Error("invalid gemini notes");
             }
 
-            fs.writeFileSync("nightly-release-notes.md", `${text}\n`);
+            writeNotes(summary, bullets);
           }
 
           writeGeminiNotes().catch((error) => {
@@ -290,7 +369,9 @@ jobs:
           const sha = process.env.GITHUB_SHA.slice(0, 7);
           const repo = process.env.GITHUB_REPOSITORY;
           const releaseUrl = `https://github.com/${repo}/releases/tag/nightly`;
-          const next = `${start}\nnightly: [${date}](${releaseUrl}) · \`${sha}\` · web, macos, android\n${end}`;
+          const summary = fs.readFileSync("nightly-release-summary.txt", "utf8").trim();
+          const model = fs.readFileSync("nightly-release-model.txt", "utf8").trim();
+          const next = `${start}\nnightly: [${date}](${releaseUrl}) · \`${sha}\` · ${model}\nnote: ${summary}\n${end}`;
           const readme = fs.readFileSync(readmePath, "utf8");
           const pattern = new RegExp(`${start}[\\s\\S]*?${end}`);
 
@@ -309,8 +390,12 @@ jobs:
 
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          summary="$(cat nightly-release-summary.txt)"
+          model="$(cat nightly-release-model.txt)"
           git add README.md
           git commit \
             -m "docs: refresh nightly note" \
-            -m "release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/nightly"
+            -m "release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/nightly" \
+            -m "model: ${model}" \
+            -m "note: ${summary}"
           git push origin HEAD:${GITHUB_REF_NAME}

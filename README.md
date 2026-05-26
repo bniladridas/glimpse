@@ -10,10 +10,9 @@
 
 glimpse creates simple marks from icons, shapes, text, and images.
 
-recent updates: browser symbols, rust export, native app builds.
-
 <!-- nightly:start -->
-nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) · `d89e10d` · web, macos, android
+nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) · `d89e10d` · gemini-3.5-flash
+note: this nightly build includes a minor update to the release scripting.
 <!-- nightly:end -->
 
 ## exports
