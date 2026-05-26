@@ -13,7 +13,7 @@ glimpse creates simple marks from icons, shapes, text, and images.
 recent updates: browser symbols, quieter symbol browsing, rust export output, and app builds for web, macos, and android.
 
 <!-- nightly:start -->
-nightly: pending first prerelease with web, macos, and android assets.
+nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) from `2df05db`, with web, macos, and android assets.
 <!-- nightly:end -->
 
 ## exports
