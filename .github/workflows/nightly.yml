@@ -167,6 +167,11 @@ jobs:
               return "";
             }
 
+            const words = text.toLowerCase().replace(/[.!?]$/, "").split(/\s+/);
+            if (words.length < 5 || weakEndings.has(words[words.length - 1])) {
+              return "";
+            }
+
             return text;
           }
 
@@ -269,6 +274,7 @@ jobs:
             "Base the notes only on the commit subjects below.",
             "Write complete sentences, not fragments.",
             "Summary must be one short sentence.",
+            `If the commits do not clearly describe an app-facing change, use this exact summary: ${fallbackSummary}`,
             "Bullets are optional. If included, bullets must contain one to four complete, past-tense sentences.",
             "Do not include an assets section. Do not mention asset filenames.",
             "Example input: docs: refresh nightly note",
