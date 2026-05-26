@@ -216,7 +216,7 @@ jobs:
 
           const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${apiKey}`;
 
-          try {
+          async function writeGeminiNotes() {
             const response = await fetch(endpoint, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
@@ -247,10 +247,12 @@ jobs:
             }
 
             fs.writeFileSync("nightly-release-notes.md", `${text}\n`);
-          } catch (error) {
+          }
+
+          writeGeminiNotes().catch((error) => {
             console.warn(`release note generation fell back: ${error.message}`);
             writeFallback();
-          }
+          });
           EOF
 
       - name: Move nightly tag
