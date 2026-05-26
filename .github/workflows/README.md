@@ -7,6 +7,7 @@ Runs on pushes and pull requests for `main` and `master`.
 Steps:
 
 ```text
+node 22
 npm ci
 npm run lint
 npm run build
@@ -19,6 +20,7 @@ Runs manually or when a `v*` tag is pushed.
 Builds:
 
 ```text
+node 22
 release/*.dmg
 release/*.dmg.blockmap
 release/latest-mac.yml
@@ -39,6 +41,7 @@ Runs manually or when a `v*` tag is pushed.
 Builds:
 
 ```text
+node 22
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
@@ -61,6 +64,7 @@ Refreshes the marked nightly note in `README.md` after the prerelease is publish
 Builds:
 
 ```text
+node 22
 glimpse-web-nightly.zip
 glimpse-macos-nightly.dmg
 glimpse-android-nightly.apk
