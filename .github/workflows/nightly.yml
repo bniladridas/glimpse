@@ -167,7 +167,7 @@ jobs:
           const sha = process.env.GITHUB_SHA.slice(0, 7);
           const repo = process.env.GITHUB_REPOSITORY;
           const releaseUrl = `https://github.com/${repo}/releases/tag/nightly`;
-          const next = `${start}\nnightly: [${date}](${releaseUrl}) from \`${sha}\`, with web, macos, and android assets.\n${end}`;
+          const next = `${start}\nnightly: [${date}](${releaseUrl}) · \`${sha}\` · web, macos, android\n${end}`;
           const readme = fs.readFileSync(readmePath, "utf8");
           const pattern = new RegExp(`${start}[\\s\\S]*?${end}`);
 
@@ -187,5 +187,7 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add README.md
-          git commit -m "docs: refresh nightly readme"
+          git commit \
+            -m "docs: refresh nightly note" \
+            -m "release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/nightly"
           git push origin HEAD:${GITHUB_REF_NAME}

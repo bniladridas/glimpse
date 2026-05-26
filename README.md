@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/assets/glimpse-desktop-app.png" alt="glimpse macos app" width="80%">
+  <img src="docs/assets/glimpse-desktop-app.png" alt="glimpse macos app" width="76%">
 </p>
 
 # glimpse
@@ -10,10 +10,10 @@
 
 glimpse creates simple marks from icons, shapes, text, and images.
 
-recent updates: browser symbols, quieter symbol browsing, rust export output, and app builds for web, macos, and android.
+recent updates: browser symbols, rust export, native app builds.
 
 <!-- nightly:start -->
-nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) from `2df05db`, with web, macos, and android assets.
+nightly: [2026-05-26](https://github.com/bniladridas/glimpse/releases/tag/nightly) · `2df05db` · web, macos, android
 <!-- nightly:end -->
 
 ## exports
