@@ -54,6 +54,36 @@ Artifact:
 android/app/build/outputs/apk/debug/app-debug.apk
 ```
 
+## Nightly
+
+Workflow:
+
+```text
+.github/workflows/nightly.yml
+```
+
+Schedule:
+
+```text
+daily at 02:20 UTC
+```
+
+Prerelease:
+
+```text
+nightly
+```
+
+After publishing, the workflow refreshes the marked nightly note in `README.md`.
+
+Assets:
+
+```text
+glimpse-web-nightly.zip
+glimpse-macos-nightly.dmg
+glimpse-android-nightly.apk
+```
+
 ## GitHub secrets
 
 Set these repository secrets:

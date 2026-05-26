@@ -50,6 +50,31 @@ VITE_SUPABASE_ANON_KEY
 VITE_SUPABASE_ANDROID_REDIRECT_URL
 ```
 
+## `nightly.yml`
+
+Runs manually or every day at 02:20 UTC.
+
+Publishes a prerelease on the moving `nightly` tag.
+
+Refreshes the marked nightly note in `README.md` after the prerelease is published.
+
+Builds:
+
+```text
+glimpse-web-nightly.zip
+glimpse-macos-nightly.dmg
+glimpse-android-nightly.apk
+```
+
+Required GitHub secrets:
+
+```text
+VITE_SUPABASE_URL
+VITE_SUPABASE_ANON_KEY
+VITE_SUPABASE_DESKTOP_REDIRECT_URL
+VITE_SUPABASE_ANDROID_REDIRECT_URL
+```
+
 ## Release tags
 
 Use version tags for release uploads.
