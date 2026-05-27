@@ -15,7 +15,7 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
   computer: ["Cpu", "Laptop", "Monitor", "Server", "HardDrive", "Terminal", "Code2", "GitBranch", "Network", "Database", "Binary", "Blocks", "Bot", "Webhook", "Keyboard", "Mouse"],
   academic: ["GraduationCap", "BookOpen", "Book", "School", "Library", "Trophy", "Calculator", "Award", "PenTool", "Feather", "Bookmark", "Brain", "Microscope"],
   corporate: ["Briefcase", "Building2", "Building", "TrendingUp", "BarChart3", "PieChart", "Target", "Shield", "Users", "Mail", "FileText", "Handshake", "Receipt", "Presentation", "Calendar", "DollarSign"],
-  shapes: ["NodeTree", "Workflow", "Box", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
+  shapes: ["NodeTree", "Workflow", "Box", "Square", "SquareDashed", "SquareDot", "SquareCheck", "SquarePlus", "SquareMinus", "SquareX", "Circle", "Triangle", "Hexagon", "Layers", "Infinity", "Command", "Layout"],
   nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
   browser: ["Home", "Search", "Download", "Share2", "Copy", "ExternalLink", "Maximize2", "Plus", "Settings", "SlidersHorizontal", "Globe", "Link", "ArrowUpRight", "RefreshCw", "Folder", "Menu", "AppWindow", "Trash2"],
   tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"],
