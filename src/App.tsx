@@ -1,12 +1,11 @@
 import React, { useState, useRef, useEffect, useCallback } from "react";
-import { Download, Image as ImageIcon, Upload, CheckCircle2, ChevronRight, X, Loader2, Type, Box, Palette, Search, Sun, Moon } from "lucide-react";
+import { Download, ChevronRight, X, Search, Sun, Moon, type LucideIcon } from "lucide-react";
 import * as Icons from "lucide-react";
 import { motion, AnimatePresence } from "motion/react";
 import { removeBackground } from "@imgly/background-removal";
 import { type Session } from "@supabase/supabase-js";
 import { AuthPanel } from "./AuthPanel";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
-// @ts-ignore
 import readmeText from "../README.md?raw";
 
 // Curated list of symbols for the deterministic builder and categories
@@ -53,32 +52,10 @@ const CANVAS_COLORS = [
 ];
 
 const CHANGELOG = [
-  { version: "v1.24", date: "Today", features: ["Integrated a dedicated Rust code exporter generating optimal, safe zero-cost raw static string slices (r##\"<svg>...</svg>\"##) for immediate use in any Rust GUI framework (egui, iced, yew)"] },
-  { version: "v1.23", date: "Today", features: ["Added a dedicated browser layout & navigation category containing standard browser actions (Home, Search, Download, Share, Copy, ExternalLink, Maximize, Settings, Sliders, Globe, Trash, Link, ArrowUpRight, etc.)"] },
-  { version: "v1.21", date: "Today", features: ["Introduced a floating 'Symbol Atelier' popout drawer that anchors alongside the controls panel, completely preventing vertical layout clutter", "Created a high-contrast inline preview section with responsive focus tiles and immediate category shortcuts", "Perfected responsive overlays with fluid spring gestures on mobile screens"] },
-  { version: "v1.20", date: "Today", features: ["Replaced horizontal category scrolling with flexwrap containers to eradicate browser scrollbar overlays and restore instantaneous icon selection"] },
-  { version: "v1.19", date: "Today", features: ["Integrated dynamic panel expansion for the icon catalog, featuring both compact minimal and ultra-wide grid modes"] },
-  { version: "v1.18", date: "Today", features: ["Introduced tailored icon libraries for specific industrial structures (Mobile developers, Computing hubs, Academic campuses, Corporate suites)", "Optimized the filter row layout to intuitively classify icons under smart taxonomies"] },
-  { version: "v1.17", date: "Today", features: ["Repositioned edge-to-edge header layout to naturally flow with document scroll for enhanced organic breathing space"] },
-  { version: "v1.16", date: "Today", features: ["Restructured edge-to-edge navigation bar styled with elegant backdrop details", "Expanded content container limits specifically for wide viewing arrays", "Calibrated general padding parameters for unmatched studio breathing room"] },
-  { version: "v1.15", date: "Today", features: ["Recalibrated screen spacing by removing redundant large header titles", "Restructured grid constraints for comfortable vertical breathing room", "Enhanced minimalist layout density to optimize tool parameters viewing"] },
-  { version: "v1.14", date: "Today", features: ["Integrated multimedia symbols (Mic, Play, Pause, Music, Headphones, Audio Volume)", "Added document & utility visuals (File, Check/Tick mark, Info indicator, Help/Guide bubble)", "Enabled dynamic layout vectors (Widescreen TV, Structural grids & Inset frames)"] },
-  { version: "v1.13", date: "Today", features: ["Expanded symbol library with digital screens (Computer, Laptop, Mobile, Dual-devices)", "Added clean vectors for operations (Refresh-loop, Ship, Erase/Wipe brush, Move, Hand)", "Integrated minimal tech components (Crown, Lightbulb, Atom, Feather, Pen, Puzzle, Code)"] },
-  { version: "v1.12", date: "Today", features: ["Logo scaling controls (Zoom in/out)", "Vector stroke path weight adjustment", "Text style weights (Light/Normal/Bold)", "Optimized icon visibility for dark, light & grey themes"] },
-  { version: "v1.11", date: "Today", features: ["Simple Guide", "Better naming (Logo/Eraser)", "Cleaner layout"] },
-  { version: "v1.10", date: "Today", features: ["Cleaner loading style", "Workspace cleanup", "Better transparency"] },
-  { version: "v1.9", date: "Today", features: ["Simple loading view", "Interface cleanup", "Better animations"] },
-  { version: "v1.8", date: "Today", features: ["Background eraser view", "New scan animation", "Grid layout"] },
-  { version: "v1.7", date: "Today", features: ["Added scan animation", "Better loading view", "Smooth transitions"] },
-  { version: "v1.6", date: "Today", features: ["Minimal controls", "Border cleanup", "Visual hierarchy"] },
-  { version: "v1.5", date: "Today", features: ["Simple selection UI", "Clean borders", "Text style controls"] },
-  { version: "v1.4", date: "Today", features: ["Custom color input", "Canvas color control", "Dynamic transparency"] },
-  { version: "v1.3", date: "Today", features: ["Simple themes (Light/Dark/Grey)"] },
-  { version: "v1.2", date: "Today", features: ["Image rendering update", "Centering for icon logos"] },
-  { version: "v1.1", date: "Today", features: ["Logo tools", "Background tools"] },
+  { version: "symbols", date: "current", features: ["Browse curated icon groups for services, travel, apps, industries, support, hardware, shapes, and social ideas."] },
+  { version: "exports", date: "current", features: ["Copy React, SVG, Rust, Kotlin, and Dart representations from the active canvas state."] },
+  { version: "native", date: "current", features: ["Package the same editor for web, macOS desktop, and Android builds."] },
 ];
-
-const COMPANY_LOGO_URL = "https://github.com/emberlamp.png";
 
 const NAV_TABS = [
   { id: "create", label: "Logo", Icon: Icons.Shapes },
@@ -191,7 +168,6 @@ export default function App() {
   // Builder State
   const [builderText, setBuilderText] = useState("GLIMPSE");
   const [builderIcon, setBuilderIcon] = useState("Workflow");
-  const [builderColor, setBuilderColor] = useState(COLORS[0]);
   const [customColor, setCustomColor] = useState(COLORS[0].hex);
   const [builderFont, setBuilderFont] = useState(FONTS[0]);
   const [builderTextWeight, setBuilderTextWeight] = useState<"light" | "normal" | "bold">("light");
@@ -199,7 +175,6 @@ export default function App() {
   const [iconSearch, setIconSearch] = useState<string>("");
   const [isIconsExpanded, setIsIconsExpanded] = useState(false);
   const [isBgTransparent, setIsBgTransparent] = useState(false);
-  const [builderBgColor, setBuilderBgColor] = useState(CANVAS_COLORS[0]);
   const [customBgColor, setCustomBgColor] = useState(CANVAS_COLORS[0].hex);
   const [iconScale, setIconScale] = useState(1.0);
   const [strokeWidth, setStrokeWidth] = useState(1.5);
@@ -221,7 +196,6 @@ export default function App() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [progress, setProgress] = useState(0);
   
-  const builderRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const sidebarRef = useRef<HTMLDivElement>(null);
 
@@ -376,7 +350,7 @@ export default function App() {
     setProgress(0);
     try {
       const config = {
-        progress: (status: string, progress: number) => {
+        progress: (_status: string, progress: number) => {
           // status can be 'fetch', 'compute', etc.
           // We can weight these if we wanted, but for now just ensure it's a smooth 0-100
           setProgress(Math.round(progress * 100));
@@ -609,8 +583,8 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         </svg>
       );
     }
-    // @ts-ignore
-    const IconComponent = Icons[name] || Icons.Box;
+    const iconLookup = Icons as unknown as Record<string, LucideIcon | undefined>;
+    const IconComponent = iconLookup[name] || Icons.Box;
     return <IconComponent className={className} style={style} strokeWidth={strokeWidth ?? 1.5} size={width || height || 20} />;
   };
 
@@ -1147,7 +1121,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                     {COLORS.map(c => (
                       <button 
                         key={c.name}
-                        onClick={() => { setBuilderColor(c); setCustomColor(c.hex); }}
+                        onClick={() => setCustomColor(c.hex)}
                         className={`w-4 h-4 rounded-full ${c.bg} transition-all duration-500 relative ${
                           customColor === c.hex 
                             ? "scale-125" 
@@ -1249,7 +1223,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                       {CANVAS_COLORS.map(c => (
                         <button 
                           key={c.name}
-                          onClick={() => { setBuilderBgColor(c); setCustomBgColor(c.hex); }}
+                          onClick={() => setCustomBgColor(c.hex)}
                           className={`w-4 h-4 rounded-full border border-brand-border/10 ${c.bg} transition-all duration-500 relative ${
                             customBgColor === c.hex 
                               ? "scale-125" 
@@ -1383,7 +1357,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                           {CANVAS_COLORS.map(c => (
                             <button 
                               key={c.name}
-                              onClick={() => { setBuilderBgColor(c); setCustomBgColor(c.hex); }}
+                              onClick={() => setCustomBgColor(c.hex)}
                               className={`w-3.5 h-3.5 rounded-full border border-brand-border/10 ${c.bg} transition-all duration-300 relative ${
                                 customBgColor === c.hex 
                                   ? "scale-110" 
