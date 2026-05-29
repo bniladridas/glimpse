@@ -8,6 +8,9 @@ on:
 permissions:
   contents: write
 
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 jobs:
   web:
     runs-on: ubuntu-latest
@@ -117,9 +120,30 @@ jobs:
   publish:
     runs-on: ubuntu-latest
     needs: [web, macos, android]
+    env:
+      HAS_GITHUB_APP_CLIENT_TOKEN: ${{ secrets.GLIMPSE_APP_CLIENT_ID != '' && secrets.GLIMPSE_APP_PRIVATE_KEY != '' }}
+      HAS_GITHUB_APP_ID_TOKEN: ${{ secrets.GLIMPSE_APP_ID != '' && secrets.GLIMPSE_APP_PRIVATE_KEY != '' }}
 
     steps:
       - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+
+      - name: Create GitHub App token
+        id: app-token
+        if: ${{ env.HAS_GITHUB_APP_CLIENT_TOKEN == 'true' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.GLIMPSE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.GLIMPSE_APP_PRIVATE_KEY }}
+
+      - name: Create GitHub App token from app ID
+        id: app-token-legacy
+        if: ${{ env.HAS_GITHUB_APP_CLIENT_TOKEN != 'true' && env.HAS_GITHUB_APP_ID_TOKEN == 'true' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GLIMPSE_APP_ID }}
+          private-key: ${{ secrets.GLIMPSE_APP_PRIVATE_KEY }}
 
       - name: Download nightly artifacts
         uses: actions/download-artifact@v4
@@ -342,12 +366,17 @@ jobs:
           EOF
 
       - name: Move nightly tag
+        env:
+          PUSH_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
         run: |
+          auth_remote="https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
           git tag --force nightly "$GITHUB_SHA"
-          git push --force origin nightly
+          git push --force "${auth_remote}" nightly
 
       - name: Publish nightly prerelease
         uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
         with:
           tag_name: nightly
           name: Nightly
@@ -362,7 +391,11 @@ jobs:
             nightly/glimpse-android-nightly/glimpse-android-nightly.apk
 
       - name: Refresh branch
-        run: git pull --ff-only origin "${GITHUB_REF_NAME}"
+        env:
+          PUSH_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
+        run: |
+          auth_remote="https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git pull --ff-only "${auth_remote}" "${GITHUB_REF_NAME}"
 
       - name: Update README nightly note
         run: |
@@ -390,13 +423,22 @@ jobs:
           EOF
 
       - name: Commit README nightly note
+        env:
+          APP_SLUG: ${{ steps.app-token.outputs.app-slug || steps.app-token-legacy.outputs.app-slug }}
+          PUSH_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
         run: |
           if git diff --quiet README.md; then
             exit 0
           fi
 
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          if [ -n "${APP_SLUG}" ]; then
+            git config user.name "${APP_SLUG}[bot]"
+            git config user.email "${APP_SLUG}[bot]@users.noreply.github.com"
+          else
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          fi
+
           summary="$(cat nightly-release-summary.txt)"
           model="$(cat nightly-release-model.txt)"
           git add README.md
@@ -405,4 +447,5 @@ jobs:
             -m "release: https://github.com/${GITHUB_REPOSITORY}/releases/tag/nightly" \
             -m "model: ${model}" \
             -m "note: ${summary}"
-          git push origin HEAD:${GITHUB_REF_NAME}
+          auth_remote="https://x-access-token:${PUSH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git"
+          git push "${auth_remote}" HEAD:${GITHUB_REF_NAME}

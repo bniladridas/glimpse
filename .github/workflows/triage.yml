@@ -1,0 +1,309 @@
+name: Triage
+
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "35 2 * * *"
+  issues:
+    types: [opened, edited, reopened]
+  pull_request_target:
+    types: [opened, edited, reopened, synchronize]
+
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
+jobs:
+  triage:
+    runs-on: ubuntu-latest
+    env:
+      HAS_GITHUB_APP_CLIENT_TOKEN: ${{ secrets.GLIMPSE_APP_CLIENT_ID != '' && secrets.GLIMPSE_APP_PRIVATE_KEY != '' }}
+      HAS_GITHUB_APP_ID_TOKEN: ${{ secrets.GLIMPSE_APP_ID != '' && secrets.GLIMPSE_APP_PRIVATE_KEY != '' }}
+
+    steps:
+      - name: Create GitHub App token
+        id: app-token
+        if: ${{ env.HAS_GITHUB_APP_CLIENT_TOKEN == 'true' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          client-id: ${{ secrets.GLIMPSE_APP_CLIENT_ID }}
+          private-key: ${{ secrets.GLIMPSE_APP_PRIVATE_KEY }}
+
+      - name: Create GitHub App token from app ID
+        id: app-token-legacy
+        if: ${{ env.HAS_GITHUB_APP_CLIENT_TOKEN != 'true' && env.HAS_GITHUB_APP_ID_TOKEN == 'true' }}
+        uses: actions/create-github-app-token@v3
+        with:
+          app-id: ${{ secrets.GLIMPSE_APP_ID }}
+          private-key: ${{ secrets.GLIMPSE_APP_PRIVATE_KEY }}
+
+      - name: Triage issues and pull requests
+        env:
+          TRIAGE_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
+        run: |
+          node <<'EOF'
+          const fs = require("fs");
+
+          const token = process.env.TRIAGE_TOKEN;
+          const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
+          const eventName = process.env.GITHUB_EVENT_NAME;
+          const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
+          const now = Date.now();
+          const staleDays = 30;
+          const closeDays = 14;
+          const staleBefore = new Date(now - staleDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+          const closeBefore = new Date(now - closeDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
+
+          const labels = {
+            "needs-triage": { color: "ededed", description: "needs a first pass" },
+            stale: { color: "d4d4d4", description: "no recent activity" },
+            duplicate: { color: "cfd8dc", description: "same request already exists" },
+            "area: web": { color: "bfdadc", description: "web app" },
+            "area: desktop": { color: "d9d2e9", description: "desktop app" },
+            "area: android": { color: "d9ead3", description: "android app" },
+            "area: docs": { color: "fff2cc", description: "documentation" },
+            "area: workflow": { color: "cfe2f3", description: "github workflows" },
+            "type: bug": { color: "f4cccc", description: "bug report" },
+            "type: feature": { color: "d0e0e3", description: "feature request" },
+            "type: docs": { color: "ead1dc", description: "documentation change" },
+          };
+
+          const exemptLabels = new Set(["security", "pinned", "blocked", "help wanted", "good first issue"]);
+
+          async function request(method, path, body) {
+            const response = await fetch(`https://api.github.com${path}`, {
+              method,
+              headers: {
+                Accept: "application/vnd.github+json",
+                Authorization: `Bearer ${token}`,
+                "Content-Type": "application/json",
+                "X-GitHub-Api-Version": "2022-11-28",
+              },
+              body: body ? JSON.stringify(body) : undefined,
+            });
+
+            if (response.status === 204) {
+              return null;
+            }
+
+            const text = await response.text();
+            const data = text ? JSON.parse(text) : null;
+
+            if (!response.ok) {
+              const message = data?.message || response.statusText;
+              throw new Error(`${method} ${path} failed: ${message}`);
+            }
+
+            return data;
+          }
+
+          async function ensureLabel(name) {
+            const definition = labels[name];
+            if (!definition) {
+              return;
+            }
+
+            const encoded = encodeURIComponent(name);
+            try {
+              await request("GET", `/repos/${owner}/${repo}/labels/${encoded}`);
+            } catch (error) {
+              if (!error.message.includes("Not Found")) {
+                throw error;
+              }
+
+              await request("POST", `/repos/${owner}/${repo}/labels`, {
+                name,
+                color: definition.color,
+                description: definition.description,
+              });
+            }
+          }
+
+          async function addLabels(number, names) {
+            const unique = [...new Set(names)].filter(Boolean);
+            if (unique.length === 0) {
+              return;
+            }
+
+            await Promise.all(unique.map(ensureLabel));
+            await request("POST", `/repos/${owner}/${repo}/issues/${number}/labels`, { labels: unique });
+          }
+
+          async function comment(number, body) {
+            await request("POST", `/repos/${owner}/${repo}/issues/${number}/comments`, { body });
+          }
+
+          async function closeItem(item, reason) {
+            if (item.pull_request) {
+              await request("PATCH", `/repos/${owner}/${repo}/pulls/${item.number}`, { state: "closed" });
+              return;
+            }
+
+            await request("PATCH", `/repos/${owner}/${repo}/issues/${item.number}`, {
+              state: "closed",
+              state_reason: reason,
+            });
+          }
+
+          function labelNames(item) {
+            return (item.labels || []).map((label) => label.name);
+          }
+
+          function isExempt(item) {
+            return labelNames(item).some((label) => exemptLabels.has(label));
+          }
+
+          function normalizeTitle(title) {
+            return title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
+          }
+
+          async function search(query) {
+            const path = `/search/issues?q=${encodeURIComponent(query)}&per_page=50`;
+            const data = await request("GET", path);
+            return data.items || [];
+          }
+
+          function labelsFromText(text) {
+            const lower = text.toLowerCase();
+            const next = ["needs-triage"];
+
+            if (/\b(bug|broken|crash|error|fail|wrong)\b/.test(lower)) {
+              next.push("type: bug");
+            }
+
+            if (/\b(feature|request|add|support|need|can we)\b/.test(lower)) {
+              next.push("type: feature");
+            }
+
+            if (/\b(readme|docs?|runbook|workflow|github action)\b/.test(lower)) {
+              next.push("type: docs");
+            }
+
+            if (/\b(android|apk|mobile)\b/.test(lower)) {
+              next.push("area: android");
+            }
+
+            if (/\b(mac|macos|desktop|dmg|electron|windows)\b/.test(lower)) {
+              next.push("area: desktop");
+            }
+
+            if (/\b(web|browser|vite|vercel|supabase|auth|canvas)\b/.test(lower)) {
+              next.push("area: web");
+            }
+
+            if (/\b(workflow|actions|release|nightly|ci)\b/.test(lower)) {
+              next.push("area: workflow");
+            }
+
+            if (/\b(readme|docs?|runbook|license|security)\b/.test(lower)) {
+              next.push("area: docs");
+            }
+
+            return next;
+          }
+
+          async function labelsFromPullRequest(number, title, body) {
+            const files = await request("GET", `/repos/${owner}/${repo}/pulls/${number}/files?per_page=100`);
+            const paths = files.map((file) => file.filename);
+            const next = labelsFromText(`${title}\n${body || ""}\n${paths.join("\n")}`);
+
+            if (paths.some((path) => path.startsWith("android/") || path.includes("capacitor"))) {
+              next.push("area: android");
+            }
+
+            if (paths.some((path) => path.startsWith("electron") || path.includes("release-macos"))) {
+              next.push("area: desktop");
+            }
+
+            if (paths.some((path) => path.startsWith("src/") || path.startsWith("public/"))) {
+              next.push("area: web");
+            }
+
+            if (paths.some((path) => path.startsWith(".github/workflows/"))) {
+              next.push("area: workflow");
+            }
+
+            if (paths.some((path) => path.endsWith(".md") || path.startsWith("runbooks/"))) {
+              next.push("area: docs");
+            }
+
+            return next;
+          }
+
+          async function closeDuplicate(item) {
+            const kind = item.pull_request ? "pr" : "issue";
+            const title = normalizeTitle(item.title);
+            if (!title || isExempt(item)) {
+              return;
+            }
+
+            const candidates = await search(`repo:${owner}/${repo} is:open is:${kind} in:title "${title}"`);
+            const duplicateOf = candidates
+              .filter((candidate) => candidate.number !== item.number)
+              .filter((candidate) => normalizeTitle(candidate.title) === title)
+              .sort((a, b) => a.number - b.number)[0];
+
+            if (!duplicateOf) {
+              return;
+            }
+
+            await addLabels(item.number, ["duplicate"]);
+            await comment(item.number, `Closing this as a duplicate of #${duplicateOf.number}.`);
+            await closeItem(item, "not_planned");
+          }
+
+          async function triageCurrentItem() {
+            const item = event.issue || (event.pull_request ? { ...event.pull_request, pull_request: {} } : null);
+            if (!item || item.state !== "open") {
+              return;
+            }
+
+            if (eventName === "pull_request_target") {
+              await addLabels(item.number, await labelsFromPullRequest(item.number, item.title, item.body));
+            } else {
+              await addLabels(item.number, labelsFromText(`${item.title}\n${item.body || ""}`));
+            }
+
+            await closeDuplicate(item);
+          }
+
+          async function markAndCloseStale(kind) {
+            const staleItems = await search(`repo:${owner}/${repo} is:open is:${kind} updated:<${staleBefore}`);
+
+            for (const item of staleItems.slice(0, 30)) {
+              if (isExempt(item)) {
+                continue;
+              }
+
+              const names = labelNames(item);
+              if (names.includes("stale") && item.updated_at.slice(0, 10) < closeBefore) {
+                await comment(item.number, "Closing this because it stayed stale with no new activity.");
+                await closeItem(item, "not_planned");
+                continue;
+              }
+
+              if (!names.includes("stale")) {
+                await addLabels(item.number, ["stale"]);
+                await comment(item.number, "Marking this stale because there has been no recent activity.");
+              }
+            }
+          }
+
+          async function main() {
+            await triageCurrentItem();
+
+            if (eventName === "schedule" || eventName === "workflow_dispatch") {
+              await markAndCloseStale("issue");
+              await markAndCloseStale("pr");
+            }
+          }
+
+          main().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          EOF

@@ -65,6 +65,8 @@ Refreshes the marked nightly note in `README.md` after the prerelease is publish
 
 The release page already lists uploaded assets, so the generated body does not repeat asset filenames.
 
+If `GLIMPSE_APP_CLIENT_ID` and `GLIMPSE_APP_PRIVATE_KEY` are set, the publish job uses a GitHub App installation token for the moving tag, prerelease, and README nightly note commit. `GLIMPSE_APP_ID` is kept as a fallback. If neither app secret pair is set, it uses the default Actions token.
+
 Builds:
 
 ```text
@@ -90,6 +92,16 @@ Optional repository variable:
 GEMINI_RELEASE_MODEL
 ```
 
+Optional GitHub App secrets:
+
+```text
+GLIMPSE_APP_CLIENT_ID
+GLIMPSE_APP_ID
+GLIMPSE_APP_PRIVATE_KEY
+```
+
+Use `GLIMPSE_APP_CLIENT_ID` for new setup. `GLIMPSE_APP_ID` is only a fallback for older configuration. The GitHub App needs repository contents read and write access and must be installed on this repository. Do not commit the private key.
+
 Default:
 
 ```text
@@ -101,6 +113,41 @@ Recommended override:
 ```text
 gemini-2.5-flash
 ```
+
+## `triage.yml`
+
+Runs on issues, pull requests, a manual run, and every day at 02:35 UTC.
+
+Uses the GitHub App token when `GLIMPSE_APP_CLIENT_ID` and `GLIMPSE_APP_PRIVATE_KEY` are set. `GLIMPSE_APP_ID` is kept as a fallback. Otherwise it uses the default Actions token.
+
+It can:
+
+```text
+create missing labels
+label issues and pull requests
+mark stale issues and pull requests
+close stale issues and pull requests after no new activity
+close duplicate issues and pull requests when the normalized title matches an older open item
+```
+
+Workflow permissions:
+
+```text
+contents: read
+issues: write
+pull-requests: write
+```
+
+GitHub App repository permissions:
+
+```text
+Contents: Read and write
+Issues: Read and write
+Pull requests: Read and write
+Metadata: Read-only
+```
+
+`Contents: Read and write` is needed when the same GitHub App also publishes the nightly release.
 
 ## Release tags
 
