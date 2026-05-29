@@ -16,10 +16,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: "npm"
@@ -37,7 +37,7 @@ jobs:
         run: zip -r glimpse-web-nightly.zip dist
 
       - name: Upload web artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: glimpse-web-nightly
           path: glimpse-web-nightly.zip
@@ -46,10 +46,10 @@ jobs:
     runs-on: macos-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: "npm"
@@ -70,7 +70,7 @@ jobs:
           cp release/latest-mac.yml glimpse-macos-latest-mac.yml
 
       - name: Upload macOS artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: glimpse-macos-nightly
           path: |
@@ -81,22 +81,22 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
       - name: Set up Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 22
           cache: "npm"
 
       - name: Set up Java
-        uses: actions/setup-java@v4
+        uses: actions/setup-java@v5
         with:
           distribution: "temurin"
           java-version: "21"
 
       - name: Set up Android SDK
-        uses: android-actions/setup-android@v3
+        uses: android-actions/setup-android@v4
 
       - name: Install dependencies
         run: npm ci
@@ -112,7 +112,7 @@ jobs:
         run: cp android/app/build/outputs/apk/debug/app-debug.apk glimpse-android-nightly.apk
 
       - name: Upload Android artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: glimpse-android-nightly
           path: glimpse-android-nightly.apk
@@ -125,7 +125,7 @@ jobs:
       HAS_GITHUB_APP_ID_TOKEN: ${{ secrets.GLIMPSE_APP_ID != '' && secrets.GLIMPSE_APP_PRIVATE_KEY != '' }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: false
 
@@ -146,7 +146,7 @@ jobs:
           private-key: ${{ secrets.GLIMPSE_APP_PRIVATE_KEY }}
 
       - name: Download nightly artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v8
         with:
           path: nightly
 
@@ -374,7 +374,7 @@ jobs:
           git push --force "${auth_remote}" nightly
 
       - name: Publish nightly prerelease
-        uses: softprops/action-gh-release@v2
+        uses: softprops/action-gh-release@v3
         env:
           GITHUB_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
         with:
