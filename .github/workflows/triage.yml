@@ -44,11 +44,16 @@ jobs:
       - name: Triage issues and pull requests
         env:
           TRIAGE_TOKEN: ${{ steps.app-token.outputs.token || steps.app-token-legacy.outputs.token || github.token }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          VESPER_GEMINI_API_KEY: ${{ secrets.VESPER_GEMINI_API_KEY }}
+          GEMINI_TRIAGE_MODEL: ${{ vars.GEMINI_TRIAGE_MODEL }}
         run: |
           node <<'EOF'
           const fs = require("fs");
 
           const token = process.env.TRIAGE_TOKEN;
+          const geminiApiKey = process.env.GEMINI_API_KEY || process.env.VESPER_GEMINI_API_KEY;
+          const geminiModel = process.env.GEMINI_TRIAGE_MODEL || "gemini-3.5-flash";
           const [owner, repo] = process.env.GITHUB_REPOSITORY.split("/");
           const eventName = process.env.GITHUB_EVENT_NAME;
           const event = JSON.parse(fs.readFileSync(process.env.GITHUB_EVENT_PATH, "utf8"));
@@ -137,6 +142,10 @@ jobs:
             await request("POST", `/repos/${owner}/${repo}/issues/${number}/comments`, { body });
           }
 
+          async function listComments(number) {
+            return request("GET", `/repos/${owner}/${repo}/issues/${number}/comments?per_page=100`);
+          }
+
           async function closeItem(item, reason) {
             if (item.pull_request) {
               await request("PATCH", `/repos/${owner}/${repo}/pulls/${item.number}`, { state: "closed" });
@@ -161,10 +170,157 @@ jobs:
             return title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
           }
 
+          function shouldNormalizeEscapedLineBreaks(body) {
+            const text = body || "";
+            if (!text.includes("\\n")) {
+              return false;
+            }
+
+            const escapedBreaks = (text.match(/\\n/g) || []).length;
+            const realBreaks = (text.match(/\n/g) || []).length;
+            const looksLikeMarkdown = /\\n\\n|\\n[-*]\s|\\n#{1,6}\s|\\n```/.test(text);
+
+            return looksLikeMarkdown && escapedBreaks > realBreaks;
+          }
+
+          async function normalizeEscapedLineBreaks(item) {
+            if (!shouldNormalizeEscapedLineBreaks(item.body)) {
+              return item.body || "";
+            }
+
+            const body = item.body.replace(/\\n/g, "\n");
+
+            if (item.pull_request) {
+              await request("PATCH", `/repos/${owner}/${repo}/pulls/${item.number}`, { body });
+            } else {
+              await request("PATCH", `/repos/${owner}/${repo}/issues/${item.number}`, { body });
+            }
+
+            return body;
+          }
+
           async function search(query) {
             const path = `/search/issues?q=${encodeURIComponent(query)}&per_page=50`;
             const data = await request("GET", path);
             return data.items || [];
+          }
+
+          function normalizeGeneratedText(value, limit) {
+            return String(value || "").trim().replace(/\r\n/g, "\n").slice(0, limit);
+          }
+
+          function fallbackLinkedIssue(pr, paths) {
+            const title = normalizeGeneratedText(`Track PR #${pr.number}: ${pr.title}`, 180);
+            const body = [
+              `Linked PR: #${pr.number}`,
+              "",
+              "This issue tracks the work in the linked pull request.",
+              "",
+              "Touched paths:",
+              ...paths.slice(0, 12).map((path) => `- \`${path}\``),
+            ].join("\n");
+
+            return { title, body };
+          }
+
+          async function geminiLinkedIssue(pr, paths) {
+            const fallback = fallbackLinkedIssue(pr, paths);
+            if (!geminiApiKey) {
+              return fallback;
+            }
+
+            const prompt = [
+              "Write a quiet GitHub issue for a pull request as JSON.",
+              "Return only valid JSON with this shape: {\"title\":\"...\",\"body\":\"...\"}.",
+              "The issue tracks the work associated with the pull request.",
+              `The body must include this exact line near the top: Linked PR: #${pr.number}`,
+              "Use complete sentences. Keep it short. Do not oversell. Do not mention automation.",
+              "",
+              `pull request number: ${pr.number}`,
+              `pull request title: ${pr.title}`,
+              "",
+              "pull request body:",
+              pr.body || "",
+              "",
+              "changed paths:",
+              paths.join("\n"),
+            ].join("\n");
+
+            const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
+
+            try {
+              const response = await fetch(endpoint, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                  contents: [{ parts: [{ text: prompt }] }],
+                  generationConfig: {
+                    temperature: 0.2,
+                    maxOutputTokens: 700,
+                    responseMimeType: "application/json",
+                    responseSchema: {
+                      type: "object",
+                      properties: {
+                        title: { type: "string" },
+                        body: { type: "string" },
+                      },
+                      required: ["title", "body"],
+                    },
+                  },
+                }),
+              });
+
+              if (!response.ok) {
+                throw new Error(`gemini ${response.status}`);
+              }
+
+              const data = await response.json();
+              const text = data.candidates?.[0]?.content?.parts?.map((part) => part.text || "").join("").trim();
+              const parsed = JSON.parse(text || "{}");
+              const title = normalizeGeneratedText(parsed.title, 180);
+              let body = normalizeGeneratedText(parsed.body, 4000);
+
+              if (!title || !body) {
+                throw new Error("empty gemini issue");
+              }
+
+              if (!body.includes(`Linked PR: #${pr.number}`)) {
+                body = `Linked PR: #${pr.number}\n\n${body}`;
+              }
+
+              return { title, body };
+            } catch (error) {
+              console.warn(`linked issue generation fell back: ${error.message}`);
+              return fallback;
+            }
+          }
+
+          async function ensureLinkedIssue(pr, paths, issueLabels) {
+            if (!pr.pull_request || eventName !== "pull_request_target") {
+              return;
+            }
+
+            const comments = await listComments(pr.number);
+            const hasLinkedIssue = comments.some((entry) => /<!-- triage-linked-issue:\d+ -->/.test(entry.body || ""));
+            if (hasLinkedIssue) {
+              return;
+            }
+
+            const existing = await search(`repo:${owner}/${repo} is:issue "Linked PR: #${pr.number}"`);
+            const linked = existing.find((issue) => !issue.pull_request);
+            if (linked) {
+              await comment(pr.number, `Linked issue: #${linked.number}\n\n<!-- triage-linked-issue:${linked.number} -->`);
+              return;
+            }
+
+            const generated = await geminiLinkedIssue(pr, paths);
+            const issue = await request("POST", `/repos/${owner}/${repo}/issues`, {
+              title: generated.title,
+              body: generated.body,
+              labels: [...new Set(issueLabels.filter((name) => labels[name] || name === "needs-triage"))],
+            });
+
+            await comment(pr.number, `Linked issue: #${issue.number}\n\n<!-- triage-linked-issue:${issue.number} -->`);
           }
 
           function labelsFromText(text) {
@@ -206,9 +362,7 @@ jobs:
             return next;
           }
 
-          async function labelsFromPullRequest(number, title, body) {
-            const files = await request("GET", `/repos/${owner}/${repo}/pulls/${number}/files?per_page=100`);
-            const paths = files.map((file) => file.filename);
+          function labelsFromPullRequestPaths(title, body, paths) {
             const next = labelsFromText(`${title}\n${body || ""}\n${paths.join("\n")}`);
 
             if (paths.some((path) => path.startsWith("android/") || path.includes("capacitor"))) {
@@ -232,6 +386,15 @@ jobs:
             }
 
             return next;
+          }
+
+          async function pullRequestContext(number, title, body) {
+            const files = await request("GET", `/repos/${owner}/${repo}/pulls/${number}/files?per_page=100`);
+            const paths = files.map((file) => file.filename);
+            return {
+              paths,
+              labels: labelsFromPullRequestPaths(title, body, paths),
+            };
           }
 
           async function closeDuplicate(item) {
@@ -262,8 +425,12 @@ jobs:
               return;
             }
 
+            item.body = await normalizeEscapedLineBreaks(item);
+
             if (eventName === "pull_request_target") {
-              await addLabels(item.number, await labelsFromPullRequest(item.number, item.title, item.body));
+              const context = await pullRequestContext(item.number, item.title, item.body);
+              await addLabels(item.number, context.labels);
+              await ensureLinkedIssue(item, context.paths, context.labels);
             } else {
               await addLabels(item.number, labelsFromText(`${item.title}\n${item.body || ""}`));
             }

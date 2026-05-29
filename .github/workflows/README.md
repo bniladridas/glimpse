@@ -108,12 +108,6 @@ Default:
 gemini-3.5-flash
 ```
 
-Recommended override:
-
-```text
-gemini-2.5-flash
-```
-
 ## `triage.yml`
 
 Runs on issues, pull requests, a manual run, and every day at 02:35 UTC.
@@ -125,9 +119,25 @@ It can:
 ```text
 create missing labels
 label issues and pull requests
+create a linked issue for a pull request
+fix escaped markdown line breaks in issue and pull request bodies
 mark stale issues and pull requests
 close stale issues and pull requests after no new activity
 close duplicate issues and pull requests when the normalized title matches an older open item
+```
+
+When `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set, linked PR issues are drafted with Gemini. Without a key, the workflow creates a short fallback issue.
+
+Optional repository variable:
+
+```text
+GEMINI_TRIAGE_MODEL
+```
+
+Default:
+
+```text
+gemini-3.5-flash
 ```
 
 Workflow permissions:

@@ -76,7 +76,7 @@ nightly
 
 After publishing, the workflow refreshes the marked nightly note in `README.md` with the release note summary and model.
 
-When `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set, the workflow drafts quiet prerelease notes from recent commits. Set `GEMINI_RELEASE_MODEL` to override the default `gemini-3.5-flash` model; `gemini-2.5-flash` is the recommended override for structured release notes. Incomplete generated summaries fall back to a static note. The release body does not repeat asset filenames because GitHub lists uploaded assets separately.
+When `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set, the workflow drafts quiet prerelease notes from recent commits. Set `GEMINI_RELEASE_MODEL` to override the default `gemini-3.5-flash` model. Incomplete generated summaries fall back to a static note. The release body does not repeat asset filenames because GitHub lists uploaded assets separately.
 
 When `GLIMPSE_APP_CLIENT_ID` and `GLIMPSE_APP_PRIVATE_KEY` are set, the publish job uses a GitHub App installation token for the nightly tag, prerelease, and README commit. `GLIMPSE_APP_ID` is kept as a fallback. Without an app secret pair, it uses the default Actions token.
 
