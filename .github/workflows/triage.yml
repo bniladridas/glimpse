@@ -161,6 +161,35 @@ jobs:
             return title.toLowerCase().replace(/[^a-z0-9]+/g, " ").trim().replace(/\s+/g, " ");
           }
 
+          function shouldNormalizeEscapedLineBreaks(body) {
+            const text = body || "";
+            if (!text.includes("\\n")) {
+              return false;
+            }
+
+            const escapedBreaks = (text.match(/\\n/g) || []).length;
+            const realBreaks = (text.match(/\n/g) || []).length;
+            const looksLikeMarkdown = /\\n\\n|\\n[-*]\s|\\n#{1,6}\s|\\n```/.test(text);
+
+            return looksLikeMarkdown && escapedBreaks > realBreaks;
+          }
+
+          async function normalizeEscapedLineBreaks(item) {
+            if (!shouldNormalizeEscapedLineBreaks(item.body)) {
+              return item.body || "";
+            }
+
+            const body = item.body.replace(/\\n/g, "\n");
+
+            if (item.pull_request) {
+              await request("PATCH", `/repos/${owner}/${repo}/pulls/${item.number}`, { body });
+            } else {
+              await request("PATCH", `/repos/${owner}/${repo}/issues/${item.number}`, { body });
+            }
+
+            return body;
+          }
+
           async function search(query) {
             const path = `/search/issues?q=${encodeURIComponent(query)}&per_page=50`;
             const data = await request("GET", path);
@@ -261,6 +290,8 @@ jobs:
             if (!item || item.state !== "open") {
               return;
             }
+
+            item.body = await normalizeEscapedLineBreaks(item);
 
             if (eventName === "pull_request_target") {
               await addLabels(item.number, await labelsFromPullRequest(item.number, item.title, item.body));
