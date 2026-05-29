@@ -63,6 +63,8 @@ jobs:
           const staleBefore = new Date(now - staleDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
           const closeBefore = new Date(now - closeDays * 24 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
+          console.log(`gemini model: ${geminiModel}`);
+
           const labels = {
             "needs-triage": { color: "ededed", description: "needs a first pass" },
             stale: { color: "d4d4d4", description: "no recent activity" },
@@ -104,6 +106,10 @@ jobs:
             }
 
             return data;
+          }
+
+          function wait(ms) {
+            return new Promise((resolve) => setTimeout(resolve, ms));
           }
 
           async function ensureLabel(name) {
@@ -248,27 +254,39 @@ jobs:
 
             const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/${geminiModel}:generateContent?key=${geminiApiKey}`;
 
-            try {
-              const response = await fetch(endpoint, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                  contents: [{ parts: [{ text: prompt }] }],
-                  generationConfig: {
-                    temperature: 0.2,
-                    maxOutputTokens: 700,
-                    responseMimeType: "application/json",
-                    responseSchema: {
-                      type: "object",
-                      properties: {
-                        title: { type: "string" },
-                        body: { type: "string" },
-                      },
-                      required: ["title", "body"],
-                    },
+            const requestBody = JSON.stringify({
+              contents: [{ parts: [{ text: prompt }] }],
+              generationConfig: {
+                temperature: 0.2,
+                maxOutputTokens: 700,
+                responseMimeType: "application/json",
+                responseSchema: {
+                  type: "object",
+                  properties: {
+                    title: { type: "string" },
+                    body: { type: "string" },
                   },
-                }),
-              });
+                  required: ["title", "body"],
+                },
+              },
+            });
+
+            try {
+              let response;
+              for (let attempt = 1; attempt <= 3; attempt += 1) {
+                response = await fetch(endpoint, {
+                  method: "POST",
+                  headers: { "Content-Type": "application/json" },
+                  body: requestBody,
+                });
+
+                if (response.ok || ![429, 500, 502, 503, 504].includes(response.status) || attempt === 3) {
+                  break;
+                }
+
+                console.warn(`gemini ${response.status}; retrying`);
+                await wait(attempt * 1500);
+              }
 
               if (!response.ok) {
                 throw new Error(`gemini ${response.status}`);

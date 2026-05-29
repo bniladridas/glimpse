@@ -126,7 +126,7 @@ close stale issues and pull requests after no new activity
 close duplicate issues and pull requests when the normalized title matches an older open item
 ```
 
-When `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set, linked PR issues are drafted with Gemini. Without a key, the workflow creates a short fallback issue.
+When `GEMINI_API_KEY` or `VESPER_GEMINI_API_KEY` is set, linked PR issues are drafted with Gemini. Temporary Gemini failures are retried. Without a key, or after repeated failures, the workflow creates a short fallback issue.
 
 Optional repository variable:
 
