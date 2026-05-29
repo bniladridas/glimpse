@@ -6,6 +6,7 @@ import { removeBackground } from "@imgly/background-removal";
 import { type Session } from "@supabase/supabase-js";
 import { AuthPanel } from "./AuthPanel";
 import { isSupabaseConfigured, supabase } from "./lib/supabase";
+import appIconUrl from "../assets/icon.png";
 import readmeText from "../README.md?raw";
 
 // Curated list of symbols for the deterministic builder and categories
@@ -62,6 +63,27 @@ const NAV_TABS = [
   { id: "isolate", label: "Clean", Icon: Icons.Eraser },
   { id: "webpage", label: "Webpage", Icon: Icons.FileText },
   { id: "guide", label: "Help", Icon: Icons.CircleHelp },
+] as const;
+
+const APP_DOWNLOADS = [
+  {
+    label: "web",
+    detail: "open",
+    href: "https://glimpsehosting.vercel.app",
+    Icon: Icons.Globe,
+  },
+  {
+    label: "macos",
+    detail: "dmg",
+    href: "https://github.com/bniladridas/glimpse/releases/download/nightly/glimpse-macos-nightly.dmg",
+    Icon: Icons.Apple,
+  },
+  {
+    label: "android",
+    detail: "apk",
+    href: "https://github.com/bniladridas/glimpse/releases/download/nightly/glimpse-android-nightly.apk",
+    Icon: Icons.Smartphone,
+  },
 ] as const;
 
 function removeAuthUrlParts(includeCode = false) {
@@ -764,9 +786,9 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                 className="space-y-6"
               >
                 <div className="space-y-4">
-                  <span className="text-[10px] font-semibold tracking-widest text-brand-text/40 uppercase">Glimpse Webpage</span>
+                  <span className="text-[10px] font-semibold tracking-widest text-brand-text/40 uppercase">Webpage</span>
                   <p className="text-sm text-brand-text/60 font-light leading-relaxed">
-                    This directory describes Glimpse's execution model and technical facts. We prioritize objective truth over cosmetic or verbose statements.
+                    App links and notes.
                   </p>
                 </div>
               </motion.div>
@@ -1611,7 +1633,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                   >
                      <div className="w-full max-w-xl space-y-8 text-left font-sans">
                        <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-brand-border/10">
-                         <h1 className="text-xs font-bold tracking-[0.2em] text-brand-text uppercase">Glimpse Webpage Specifications</h1>
+                         <h1 className="text-xs font-bold tracking-[0.2em] text-brand-text/75 uppercase">app</h1>
                          <div className="flex gap-3">
                            <button 
                              onClick={() => setIsViewRawReadme(false)}
@@ -1619,7 +1641,7 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                !isViewRawReadme ? "text-brand-text font-bold underlineUnderline underline-offset-4" : "text-brand-text/45 hover:text-brand-text/75"
                              }`}
                            >
-                             Specs View
+                             notes
                            </button>
                            <button 
                              onClick={() => setIsViewRawReadme(true)}
@@ -1627,34 +1649,69 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
                                isViewRawReadme ? "text-brand-text font-bold underlineUnderline underline-offset-4" : "text-brand-text/45 hover:text-brand-text/75"
                              }`}
                            >
-                             Raw README.md (Plain)
+                             readme
                            </button>
                          </div>
                        </header>
 
                        {isViewRawReadme ? (
                          <div className="space-y-4">
-                           <span className="text-[9px] font-mono tracking-widest text-brand-text/40 uppercase block">Plaintext Repository Documentation</span>
+                           <span className="text-[9px] font-mono tracking-widest text-brand-text/40 uppercase block">readme</span>
                            <pre className="font-mono text-[9.5px] leading-relaxed text-brand-text/75 whitespace-pre-wrap bg-brand-subtle/50 p-4 border border-brand-border/10 rounded-sm select-text selection:bg-brand-text/10">
                              {readmeText || "No plain readme available."}
                            </pre>
                          </div>
                        ) : (
-                         <div className="space-y-8 text-xs leading-relaxed text-brand-text/70 font-light">
+                        <div className="space-y-8 text-xs leading-relaxed text-brand-text/65 font-light">
+                          <section className="space-y-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={appIconUrl}
+                                alt="Glimpse app icon"
+                                className="h-10 w-10 rounded-lg border border-brand-border/10 opacity-80"
+                              />
+                              <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text/70 uppercase font-mono">downloads</h2>
+                            </div>
+
+                            <div className="grid gap-2 sm:grid-cols-3">
+                              {APP_DOWNLOADS.map(({ label, detail, href, Icon }) => (
+                                <a
+                                  key={label}
+                                  href={href}
+                                  target="_blank"
+                                  rel="noreferrer"
+                                  className="group flex min-h-16 flex-col justify-between rounded-sm border border-brand-border/10 bg-transparent p-3 transition-colors hover:border-brand-text/20 hover:bg-brand-subtle/30"
+                                >
+                                  <div className="flex items-center justify-between gap-3">
+                                    <Icon className="h-3.5 w-3.5 text-brand-text/40 transition-colors group-hover:text-brand-text/65" />
+                                    <Icons.ArrowUpRight className="h-3 w-3 text-brand-text/25 transition-colors group-hover:text-brand-text/55" />
+                                  </div>
+                                  <div className="space-y-1">
+                                    <span className="block text-[10px] font-bold uppercase tracking-[0.18em] text-brand-text/70">{label}</span>
+                                    <span className="block text-[9px] font-mono uppercase tracking-wider text-brand-text/45">{detail}</span>
+                                  </div>
+                                </a>
+                              ))}
+                            </div>
+                          </section>
+
                            <div className="space-y-4 pt-2">
-                             <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">1. Online & CDN Requirements</h2>
+                             <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text/70 uppercase font-mono">network</h2>
                              <p>
-                               When deployed on Vercel, Glimpse is not natively offline-capable. It does not implement custom service worker static asset caching or local PWA offline manifests.
+                               The web app needs internet.
                              </p>
                              <p>
-                               The neural network weights and WebAssembly configurations utilized for background isolation are retrieved at runtime from public content distribution networks (such as unpkg.com). Thus, an active internet connection is mandatory to load and run background removal for the first time.
+                               Background removal loads model and wasm files from public cdn hosts.
                              </p>
                            </div>
 
                            <div className="space-y-4 pt-6 border-t border-brand-border/10">
-                             <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text uppercase font-mono">2. Execution Architecture</h2>
+                             <h2 className="text-[10px] font-bold tracking-[0.15em] text-brand-text/70 uppercase font-mono">runtime</h2>
                              <p>
-                               No remote databases, logging telemetry, or third-party tracking scripts are included. All vector assets, SVG models, and graphics calculations are executed locally within browser viewport memory.
+                               Logo state, image work, and exports run in the browser.
+                             </p>
+                             <p>
+                               The app does not add telemetry scripts.
                              </p>
                            </div>
                          </div>
