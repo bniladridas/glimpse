@@ -19,6 +19,11 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
   nature: ["Flame", "Zap", "Droplet", "Sun", "Moon", "Cloud", "Leaf", "Flower", "Sparkles", "Star", "Heart"],
   browser: ["Home", "Search", "Download", "Share2", "Copy", "ExternalLink", "Maximize2", "Plus", "Settings", "SlidersHorizontal", "Globe", "Link", "ArrowUpRight", "RefreshCw", "Folder", "Menu", "AppWindow", "Trash2"],
   tools: ["Key", "Lock", "Anchor", "Crown", "Lightbulb", "Atom", "Puzzle", "Mic", "Pause", "File", "Tv", "Check", "Info", "Play", "Music", "Headphones", "Volume2", "HelpCircle", "RefreshCw", "Eraser", "Brush", "Wand2", "Move", "Hand"],
+  pins: ["Pin", "Pinned", "PinOff", "FilePin", "FilePinOff", "RepoPin", "RepoPinOff", "MessagePin", "MessagePinOff", "MapPin", "MapPinCheck", "MapPinPlus", "MapPinMinus", "MapPinX", "MapPinOff", "MapPinPen", "MapPinHouse", "MapPinned", "Bookmark", "BookmarkCheck", "BookmarkPlus", "BookmarkMinus", "BookmarkX", "Paperclip"],
+  ocean: ["Whale", "Dolphin", "Shark", "Coral", "Fish", "FishSymbol", "FishOff", "Turtle", "Shell", "Waves", "Droplet", "Droplets", "Sailboat", "Ship", "ShipWheel", "Anchor", "Earth", "Palmtree"],
+  human: ["Hand", "HandGrab", "HandFist", "HandHeart", "HandHelping", "HelpingHand", "HandCoins", "HandMetal", "Handshake", "PersonStanding", "Footprints", "Accessibility", "Activity", "Eye", "EyeClosed", "EyeOff", "Ear", "EarOff", "Brain", "HeartPulse", "Smile", "SmilePlus", "Frown", "User", "UserRound", "Users", "UsersRound", "UserCheck", "UserPlus", "UserMinus"],
+  symbols: ["Cross", "Church", "Plus", "CirclePlus", "SquarePlus", "Asterisk", "SquareAsterisk", "Heart", "Shield", "Landmark", "Badge", "BadgeCheck"],
+  governance: ["Github", "GitBranch", "GitCommit", "GitPullRequest", "GitMerge", "GitFork", "FolderGit", "FolderGit2", "ShieldUser", "UserCog", "UserRoundCog", "UsersRound", "BadgeCheck", "KeyRound", "LockKeyhole", "Archive", "PackageCheck", "ClipboardCheck", "ListChecks", "Building2", "Landmark"],
   services: ["Printer", "PrinterCheck", "Scan", "ScanLine", "ScanText", "Copy", "Files", "FileStack", "FilePlus", "FileCheck", "Clipboard", "ClipboardList", "Notebook", "NotebookPen", "Pen", "PenLine", "Pencil", "PencilRuler", "Ruler", "Paperclip", "Package", "PackageCheck", "Truck", "Store", "ShoppingBag", "Receipt", "BadgeDollarSign"],
   travel: ["Plane", "PlaneTakeoff", "PlaneLanding", "TicketsPlane", "Ticket", "Luggage", "BaggageClaim", "Map", "MapPin", "Route", "Navigation", "Compass", "Ship", "Train", "Bus", "Car", "Bike"],
   apps: ["Apple", "Chrome", "MonitorSmartphone", "Smartphone", "TabletSmartphone", "Tablet", "Laptop", "Monitor", "AppWindow", "PanelsTopLeft", "PanelTop", "PanelRight", "LayoutDashboard", "Boxes", "Bot", "Gamepad2", "Watch", "Tv", "Cloud", "Globe", "Radio", "Wifi", "Bluetooth", "QrCode", "BadgeCheck", "ShieldCheck", "KeyRound", "LockKeyhole", "Fingerprint"],
@@ -29,6 +34,7 @@ const SYMBOL_CATEGORIES: Record<string, string[]> = {
 };
 
 const LOGO_SYMBOLS = Array.from(new Set(Object.values(SYMBOL_CATEGORIES).flat()));
+const CUSTOM_SYMBOLS = new Set(["NodeTree", "Pinned", "FilePin", "FilePinOff", "RepoPin", "RepoPinOff", "MessagePin", "MessagePinOff", "Whale", "Dolphin", "Shark", "Coral"]);
 
 const FONTS = [
   { name: "Sans", class: "font-sans" },
@@ -483,8 +489,24 @@ export default function App() {
 
   const copyIconCode = (type: "react" | "svg" | "rust" | "kotlin" | "dart") => {
     if (type === "react") {
-      const componentName = builderIcon === "NodeTree" ? "NodeTree" : builderIcon;
-      const snippet = `import { ${componentName} } from 'lucide-react';\n\n// Usage\n<${componentName} size={24} strokeWidth={${strokeWidth}} />`;
+      const rawSvg = document.querySelector("#preview-symbol svg");
+      if (CUSTOM_SYMBOLS.has(builderIcon) && rawSvg) {
+        const svgClone = rawSvg.cloneNode(true) as SVGSVGElement;
+        svgClone.removeAttribute("class");
+        svgClone.removeAttribute("style");
+        svgClone.setAttribute("width", "24");
+        svgClone.setAttribute("height", "24");
+        svgClone.setAttribute("stroke-width", strokeWidth.toString());
+        svgClone.setAttribute("stroke", customColor);
+        let svgData = new XMLSerializer().serializeToString(svgClone);
+        svgData = svgData.replace(/currentColor/g, customColor);
+        navigator.clipboard.writeText(svgData);
+        setCopiedType("react");
+        setTimeout(() => setCopiedType(null), 2000);
+        return;
+      }
+
+      const snippet = `import { ${builderIcon} } from 'lucide-react';\n\n// Usage\n<${builderIcon} size={24} strokeWidth={${strokeWidth}} />`;
       navigator.clipboard.writeText(snippet);
       setCopiedType("react");
       setTimeout(() => setCopiedType(null), 2000);
@@ -581,6 +603,9 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
   };
 
   const DynamicIcon = ({ name, className, style, strokeWidth, width, height }: { name: string, className?: string, style?: React.CSSProperties, strokeWidth?: number, width?: number, height?: number }) => {
+    const iconStrokeWidth = strokeWidth ?? 1.5;
+    const iconSize = width || height || 20;
+
     if (name === "NodeTree") {
       return (
         <svg 
@@ -605,9 +630,135 @@ const String ${camelCaseIcon}IconSvg = r'''${svgData}''';`;
         </svg>
       );
     }
+
+    if (CUSTOM_SYMBOLS.has(name)) {
+      if (name === "Pinned") {
+        return (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={iconStrokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            style={style}
+            width={iconSize}
+            height={iconSize}
+          >
+            <circle cx="15.5" cy="5.5" r="2.5" />
+            <path d="M13.5 7.5 9.5 11.5" />
+            <path d="M8 10l6 6" />
+            <path d="M10.5 14.5 5 20" />
+            <path d="M11 9l4 4" />
+          </svg>
+        );
+      }
+
+      if (name === "Whale" || name === "Dolphin" || name === "Shark" || name === "Coral") {
+        return (
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth={iconStrokeWidth}
+            strokeLinecap="round"
+            strokeLinejoin="round"
+            className={className}
+            style={style}
+            width={iconSize}
+            height={iconSize}
+          >
+            {name === "Whale" && (
+              <>
+                <path d="M3 13c2.2-4 6.6-6 11.5-4.5 2 .6 3.5 1.8 4.5 3.5" />
+                <path d="M4 13c2.5 3.5 8.6 5 13.5 1.5" />
+                <path d="M19 12l3-3" />
+                <path d="M19 12l3 3" />
+                <path d="M8 11h.01" />
+                <path d="M12 8c.7-1.5 1.9-2.5 3.5-3" />
+                <path d="M13 8c-.3-1.6.1-3 1.2-4.2" />
+              </>
+            )}
+            {name === "Dolphin" && (
+              <>
+                <path d="M4 14c3.8-5 10.2-6.2 15-2.5" />
+                <path d="M7 15c3.5 2.4 8.8 1.6 12-2.5" />
+                <path d="M15 9l1.5-3" />
+                <path d="M18.5 11.5l3-2" />
+                <path d="M18.5 11.5l2.5 2.5" />
+                <path d="M8 12h.01" />
+              </>
+            )}
+            {name === "Shark" && (
+              <>
+                <path d="M3 13c4-3.5 9.5-5 16-1" />
+                <path d="M4 14c4.5 2.8 10.5 2.8 15-2" />
+                <path d="M12 10l2-4 2.5 5" />
+                <path d="M19 12l3-2.5" />
+                <path d="M19 12l3 2.5" />
+                <path d="M7 12h.01" />
+              </>
+            )}
+            {name === "Coral" && (
+              <>
+                <path d="M12 21V9" />
+                <path d="M12 13c-2.5 0-4-1.5-4-4" />
+                <path d="M8 9V6" />
+                <path d="M12 15c2.5 0 4-1.5 4-4" />
+                <path d="M16 11V7" />
+                <path d="M12 17c-3 0-5 1.5-6 4" />
+                <path d="M12 17c3 0 5 1.5 6 4" />
+                <path d="M5 21h14" />
+              </>
+            )}
+          </svg>
+        );
+      }
+
+      const isOff = name.endsWith("Off");
+      const symbolType = name.replace(/Off$/, "");
+
+      return (
+        <svg
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth={iconStrokeWidth}
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          className={className}
+          style={style}
+          width={iconSize}
+          height={iconSize}
+        >
+          {symbolType === "FilePin" && (
+            <>
+              <path d="M6 3h7l5 5v13H6z" />
+              <path d="M13 3v5h5" />
+            </>
+          )}
+          {symbolType === "RepoPin" && (
+            <>
+              <path d="M3 7h6l2 2h10v10H3z" />
+              <path d="M3 7v12" />
+            </>
+          )}
+          {symbolType === "MessagePin" && (
+            <path d="M4 5h16v11H9l-5 4z" />
+          )}
+          <path d="M15 10l4 4" />
+          <path d="M14.5 10.5 12 13l4 4 2.5-2.5" />
+          <path d="M12 13l-1 3 1 1 3-1" />
+          <path d="M12 17l-2 2" />
+          {isOff && <path d="M4 4l16 16" />}
+        </svg>
+      );
+    }
+
     const iconLookup = Icons as unknown as Record<string, LucideIcon | undefined>;
     const IconComponent = iconLookup[name] || Icons.Box;
-    return <IconComponent className={className} style={style} strokeWidth={strokeWidth ?? 1.5} size={width || height || 20} />;
+    return <IconComponent className={className} style={style} strokeWidth={iconStrokeWidth} size={iconSize} />;
   };
 
   const isDesktopShell = window.location.protocol === "file:" || navigator.userAgent.toLowerCase().includes("electron");
